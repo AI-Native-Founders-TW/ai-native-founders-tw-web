@@ -1,0 +1,955 @@
+---
+// 章節 04：流派技能樹（仿《流亡黯道》天賦樹的星圖）。
+// SVG 由伺服器端產生；捲動時路徑一條條點亮，流派節點可滑過／聚焦／點擊展開流派卡。
+// 誠實：所有節點都是範例，明確標示「整理中」。
+import { links } from '../../../config/links';
+import type { Copy } from '../../../i18n/copy';
+import { buildTree, starfield } from './layout';
+
+interface Props {
+  copy: Copy;
+}
+const { copy } = Astro.props;
+const t = copy.skillTree;
+type Branch = { id: string; name: string; hint: string };
+type Build = { id: string; branch: string; name: string; for: string; cost: string; grind: string };
+const branches: Branch[] = t.branches;
+const builds: Build[] = t.builds;
+const labels = t.cardLabels ?? { for: '適合誰', cost: '前期成本', grind: '辛苦程度' };
+
+const buildOf = (branchId: string) => builds.find((b) => b.branch === branchId);
+const tree = buildTree(branches.map((b) => buildOf(b.id)?.id));
+const stars = starfield(140);
+const nodeById = new Map(tree.nodes.map((n) => [n.id, n]));
+
+const VB = { x: -80, y: -40, w: 1160, h: 880 };
+const pct = (x: number, y: number) =>
+  `left:${(((x - VB.x) / VB.w) * 100).toFixed(3)}%;top:${(((y - VB.y) / VB.h) * 100).toFixed(3)}%`;
+const phrases = (s: string) => s.match(/[^，。、；：！？,.!?]+[，。、；：！？,.!?]*/gu) ?? [s];
+// 「辛苦程度：高」→「高」（標籤另外顯示）
+const stripLabel = (v: string, label: string) =>
+  v.replace(new RegExp(`^${label}\\s*[:：]\\s*`), '');
+const [statusMain, ...statusRest] = String(t.status)
+  .split('·')
+  .map((s: string) => s.trim());
+const rootNode = nodeById.get('root')!;
+---
+
+<section
+  id="ch-04"
+  data-split="04"
+  data-split-name={copy.hud.splits['04']}
+  class="st relative"
+  aria-labelledby="st-title"
+>
+  <div class="st-wrap">
+    <div class="st-col-text">
+      <div class="st-text">
+        <p class="st-kicker">{t.kicker}</p>
+        <h2 id="st-title" class="st-title">
+          {
+            phrases(t.title).map((ph) => (
+              <span class="st-ph">
+                <span class="st-ph-in">{ph}</span>
+              </span>
+            ))
+          }
+        </h2>
+        <p class="st-body">{t.body}</p>
+        <p class="st-status">
+          <span class="st-status-dot" aria-hidden="true"></span>
+          <b>{statusMain}</b>
+          {statusRest.length > 0 && <span>{statusRest.join(' · ')}</span>}
+        </p>
+        <p class="st-hint">{t.hint}</p>
+        <a class="st-cta" href={links.mono} target="_blank" rel="noopener">
+          <span>{t.cta}</span>
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 12 12 4M6 4h6v6"></path></svg>
+        </a>
+      </div>
+    </div>
+
+    <div class="st-col-tree">
+      <div class="st-stage">
+        <div class="st-tree">
+          <div class="st-zoom">
+            <svg class="st-svg" viewBox={`${VB.x} ${VB.y} ${VB.w} ${VB.h}`} aria-hidden="true">
+              <defs>
+                <radialGradient id="st-g-lit" gradientUnits="userSpaceOnUse" cx="500" cy="500" r="500">
+                  <stop offset="0.15" stop-color="#8fd8ff"></stop>
+                  <stop offset="0.55" stop-color="#19acfe"></stop>
+                  <stop offset="0.8" stop-color="#4d47fe"></stop>
+                  <stop offset="1" stop-color="#decffe"></stop>
+                </radialGradient>
+                <radialGradient id="st-g-halo">
+                  <stop offset="0" stop-color="#8fd8ff" stop-opacity="0.65"></stop>
+                  <stop offset="0.45" stop-color="#4d47fe" stop-opacity="0.2"></stop>
+                  <stop offset="1" stop-color="#4d47fe" stop-opacity="0"></stop>
+                </radialGradient>
+                <radialGradient id="st-g-root" cx="35%" cy="30%" r="80%">
+                  <stop offset="0" stop-color="#decffe"></stop>
+                  <stop offset="0.45" stop-color="#4d47fe"></stop>
+                  <stop offset="1" stop-color="#1e47f3"></stop>
+                </radialGradient>
+                <radialGradient id="st-g-bg" gradientUnits="userSpaceOnUse" cx="500" cy="500" r="560">
+                  <stop offset="0" stop-color="#1e47f3" stop-opacity="0.18"></stop>
+                  <stop offset="0.6" stop-color="#380c74" stop-opacity="0.12"></stop>
+                  <stop offset="1" stop-color="#070a26" stop-opacity="0"></stop>
+                </radialGradient>
+              </defs>
+
+              <g class="st-bg">
+                <circle cx="500" cy="500" r="560" fill="url(#st-g-bg)"></circle>
+                <g class="st-stars">
+                  {stars.map((s) => <circle cx={s.x} cy={s.y} r={s.r} opacity={s.o} />)}
+                </g>
+                <circle class="st-orbit" cx="500" cy="500" r="312"></circle>
+                <circle class="st-orbit st-orbit-dot" cx="500" cy="500" r="476"></circle>
+                <circle class="st-orbit st-orbit-dot" cx="500" cy="500" r="540"></circle>
+                {
+                  Array.from({ length: 12 }, (_, i) => {
+                    const a = (i * 30 * Math.PI) / 180;
+                    return (
+                      <line
+                        class="st-spoke"
+                        x1={500 + Math.cos(a) * 150}
+                        y1={500 + Math.sin(a) * 150}
+                        x2={500 + Math.cos(a) * 540}
+                        y2={500 + Math.sin(a) * 540}
+                      />
+                    );
+                  })
+                }
+              </g>
+
+              <g class="st-edges-base">{tree.edges.map((e) => <path d={e.d} />)}</g>
+              <g class="st-edges-glow">{tree.edges.map((e) => <path d={e.d} pathLength="1" />)}</g>
+              <g class="st-edges-lit">{tree.edges.map((e) => <path d={e.d} pathLength="1" />)}</g>
+
+              <g class="st-nodes">
+                {
+                  tree.nodes.map((n) => (
+                    <g
+                      class:list={['st-n', `st-n-${n.kind}`]}
+                      data-id={n.id}
+                      data-build={n.buildId}
+                      transform={`translate(${n.x} ${n.y})`}
+                    >
+                      {n.kind === 'small' && (
+                        <>
+                          <circle class="st-halo" r="16" />
+                          <circle class="st-core" r="5.5" />
+                        </>
+                      )}
+                      {n.kind === 'notable' && (
+                        <>
+                          <circle class="st-halo" r="26" />
+                          <circle class="st-ring" r="13" />
+                          <circle class="st-core" r="7.5" />
+                        </>
+                      )}
+                      {n.kind === 'build' && (
+                        <>
+                          <circle class="st-halo" r="62" />
+                          <circle class="st-orbit-b" r="40" />
+                          <path class="st-frame" d="M0 -27 L19 -19 L27 0 L19 19 L0 27 L-19 19 L-27 0 L-19 -19 Z" />
+                          <circle class="st-core" r="13" />
+                          <circle class="st-spark" r="4" />
+                        </>
+                      )}
+                      {n.kind === 'root' && (
+                        <>
+                          <circle class="st-halo" r="90" />
+                          <circle class="st-orbit-b st-orbit-root" r="58" />
+                          <circle class="st-ring" r="44" />
+                          <circle class="st-root-core" r="34" fill="url(#st-g-root)" />
+                        </>
+                      )}
+                    </g>
+                  ))
+                }
+              </g>
+            </svg>
+
+            <div class="st-labels">
+              <span class="st-you" style={pct(rootNode.x, rootNode.y)}>{t.you ?? '你'}</span>
+              {
+                branches.map((b, i) => {
+                  const a = tree.branchAnchors[i];
+                  return (
+                    <span class:list={['st-branch', `al-${a.align}`]} data-branch={i} style={pct(a.x, a.y)}>
+                      <b>{b.name}</b>
+                      <span>{b.hint}</span>
+                    </span>
+                  );
+                })
+              }
+              {
+                branches.map((b, i) => {
+                  const build = buildOf(b.id);
+                  const n = nodeById.get(`b${i}-build`);
+                  if (!build || !n) return null;
+                  const below = n.y > 500;
+                  return (
+                    <button
+                      type="button"
+                      class:list={['st-build', below ? 'is-below' : 'is-above']}
+                      data-build={build.id}
+                      data-branch={i}
+                      style={pct(n.x, n.y)}
+                      aria-expanded="false"
+                      aria-controls={`st-card-${build.id}`}
+                    >
+                      <span class="st-build-hit" aria-hidden="true" />
+                      <span class="st-build-name">{build.name}</span>
+                    </button>
+                  );
+                })
+              }
+            </div>
+          </div>
+
+        </div>
+        <div class="st-dock">
+          <p class="st-dock-hint" aria-hidden="true">
+            <svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5"></circle><path d="M8 5v3.5M8 11v.01"></path></svg>
+            {t.hint}
+          </p>
+            <div class="st-cards">
+              {
+                branches.map((b, i) => {
+                  const build = buildOf(b.id);
+                  const n = nodeById.get(`b${i}-build`);
+                  if (!build || !n) return null;
+                  return (
+                    <article id={`st-card-${build.id}`} class="st-card" data-build={build.id} aria-label={build.name}>
+                      <div class="st-card-main">
+                        <header class="st-card-head">
+                          <span class="st-card-branch">{b.name}</span>
+                          <span class="st-card-tag">{t.sample ?? '範例'}</span>
+                        </header>
+                        <h3 class="st-card-name">{build.name}</h3>
+                        <p class="st-card-status">
+                          <span class="st-status-dot" aria-hidden="true" />
+                          {statusMain}
+                        </p>
+                      </div>
+                      <dl class="st-card-stats">
+                        <div>
+                          <dt>{labels.for}</dt>
+                          <dd>{build.for}</dd>
+                        </div>
+                        <div>
+                          <dt>{labels.cost}</dt>
+                          <dd>{build.cost}</dd>
+                        </div>
+                        <div>
+                          <dt>{labels.grind}</dt>
+                          <dd>{stripLabel(build.grind, labels.grind)}</dd>
+                        </div>
+                      </dl>
+                    </article>
+                  );
+                })
+              }
+            </div>
+        </div>
+        <p class="st-counter" aria-hidden="true">
+          <span>NODES</span><b class="st-count">00</b><i>/</i><span class="st-total">{tree.nodes.length}</span>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { onReady } from '../../engine';
+
+  onReady(async (s) => {
+    const root = document.getElementById('ch-04');
+    if (!root) return;
+    const { initSkillTree } = await import('./tree');
+    initSkillTree(root, s);
+  });
+</script>
+
+<style>
+  .st {
+    --st-pad: clamp(1.25rem, 6vw, 7rem);
+    background:
+      radial-gradient(60% 50% at 70% 50%, rgb(30 71 243 / 0.08), transparent 70%),
+      var(--color-night-950);
+    isolation: isolate;
+  }
+  .st-wrap {
+    padding: clamp(5rem, 12vh, 8rem) var(--st-pad);
+    display: grid;
+    gap: 3rem;
+  }
+  @media (min-width: 1024px) {
+    .st-wrap {
+      grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+      align-items: center;
+      column-gap: clamp(2rem, 4vw, 5rem);
+    }
+  }
+
+  /* ── 文字 ── */
+  .st-kicker {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-sky-400);
+    margin-bottom: 1.25rem;
+  }
+  .st-title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(2rem, 3.8vw, 3.75rem);
+    line-height: 1.14;
+    letter-spacing: -0.02em;
+  }
+  .st-ph {
+    display: inline-block;
+    white-space: nowrap;
+    overflow: clip;
+    overflow-clip-margin: 0.1em;
+    padding-bottom: 0.06em;
+    vertical-align: top;
+  }
+  .st-ph-in {
+    display: inline-block;
+  }
+  .st-body {
+    margin-top: 1.5rem;
+    max-width: 30rem;
+    color: var(--color-mist-300);
+    font-size: clamp(1rem, 1.1vw, 1.0625rem);
+    line-height: 1.85;
+  }
+  .st-status {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1.75rem;
+    padding: 0.5rem 0.85rem;
+    border-radius: 999px;
+    font-size: 0.8125rem;
+    color: var(--color-mist-300);
+    background: rgb(77 71 254 / 0.12);
+    border: 1px dashed rgb(206 171 253 / 0.45);
+  }
+  .st-status b {
+    color: var(--color-lavender-100);
+    font-weight: 600;
+  }
+  .st-status-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: #ceabfd;
+    box-shadow: 0 0 0 0 rgb(206 171 253 / 0.6);
+    animation: st-pulse 2.2s ease-out infinite;
+  }
+  @keyframes st-pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgb(206 171 253 / 0.55);
+    }
+    100% {
+      box-shadow: 0 0 0 10px rgb(206 171 253 / 0);
+    }
+  }
+  .st-hint {
+    margin-top: 1.25rem;
+    font-size: 0.8125rem;
+    color: var(--color-mist-500);
+  }
+  .st-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-top: 1.5rem;
+    padding: 0.85rem 1.25rem;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    color: var(--color-night-950);
+    background: linear-gradient(100deg, #f6fbfc, #decffe 55%, #8fd8ff);
+    box-shadow: 0 10px 30px -10px rgb(25 172 254 / 0.6);
+    transition:
+      transform 0.4s var(--ease-run),
+      box-shadow 0.4s var(--ease-run);
+  }
+  .st-cta svg {
+    width: 0.9rem;
+    height: 0.9rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: transform 0.4s var(--ease-run);
+  }
+  .st-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 40px -12px rgb(25 172 254 / 0.8);
+  }
+  .st-cta:hover svg {
+    transform: translate(2px, -2px);
+  }
+
+  /* ── 星圖 ── */
+  .st-tree {
+    position: relative;
+    width: min(100%, 44rem);
+    aspect-ratio: 1160 / 880;
+    margin-inline: auto;
+  }
+  .st-zoom {
+    position: absolute;
+    inset: 0;
+    transform-origin: 50% 50%;
+  }
+  .st-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .st-stars circle {
+    fill: #dfe8ff;
+  }
+  .st-orbit {
+    fill: none;
+    stroke: rgb(184 192 224 / 0.12);
+    stroke-width: 1;
+    stroke-dasharray: 2 8;
+    vector-effect: non-scaling-stroke;
+  }
+  .st-orbit-dot {
+    stroke-dasharray: 1 14;
+    stroke-linecap: round;
+    stroke-width: 1.5;
+  }
+  .st-spoke {
+    stroke: rgb(184 192 224 / 0.05);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+  }
+  .st-edges-base path {
+    fill: none;
+    stroke: rgb(184 192 224 / 0.16);
+    stroke-width: 3;
+    stroke-linecap: round;
+  }
+  .st-edges-glow path,
+  .st-edges-lit path {
+    fill: none;
+    stroke: url(#st-g-lit);
+    stroke-linecap: round;
+    stroke-dasharray: 1 1;
+    stroke-dashoffset: 0;
+  }
+  .st-edges-glow path {
+    stroke-width: 14;
+    opacity: 0.16;
+  }
+  .st-edges-lit path {
+    stroke-width: 3.2;
+  }
+
+  .st-n circle,
+  .st-n path {
+    transition:
+      fill 0.5s var(--ease-run),
+      stroke 0.5s var(--ease-run),
+      opacity 0.5s var(--ease-run);
+  }
+  .st-halo {
+    fill: url(#st-g-halo);
+    opacity: 0;
+  }
+  .st-core {
+    fill: #0b0f38;
+    stroke: rgb(184 192 224 / 0.45);
+    stroke-width: 2;
+  }
+  .st-ring {
+    fill: none;
+    stroke: rgb(184 192 224 / 0.3);
+    stroke-width: 2;
+  }
+  .st-frame {
+    fill: #0b0f38;
+    stroke: rgb(184 192 224 / 0.5);
+    stroke-width: 2.5;
+    stroke-linejoin: round;
+  }
+  .st-orbit-b {
+    fill: none;
+    stroke: rgb(184 192 224 / 0.25);
+    stroke-width: 1.5;
+    stroke-dasharray: 3 7;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  .st-spark {
+    fill: rgb(184 192 224 / 0.5);
+  }
+  .st-root-core {
+    filter: drop-shadow(0 0 18px rgb(77 71 254 / 0.6));
+  }
+  .st-orbit-root {
+    animation: st-spin 40s linear infinite;
+  }
+  @keyframes st-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* 點亮（靜態版預設全部點亮；動態版由 JS 加上 .on） */
+  .st:not(.is-live) .st-n .st-halo,
+  .st-n.on .st-halo {
+    opacity: 1;
+  }
+  .st:not(.is-live) .st-n .st-core,
+  .st-n.on .st-core {
+    fill: #decffe;
+    stroke: #f6fbfc;
+  }
+  .st:not(.is-live) .st-n .st-ring,
+  .st-n.on .st-ring {
+    stroke: #8fd8ff;
+  }
+  .st:not(.is-live) .st-n .st-frame,
+  .st-n.on .st-frame {
+    fill: #1e47f3;
+    stroke: #decffe;
+  }
+  .st:not(.is-live) .st-n .st-orbit-b,
+  .st-n.on .st-orbit-b {
+    stroke: rgb(222 207 254 / 0.7);
+  }
+  .st-n.on .st-orbit-b {
+    animation: st-spin 18s linear infinite;
+  }
+  .st:not(.is-live) .st-n .st-spark,
+  .st-n.on .st-spark {
+    fill: #fff;
+  }
+  .st-n-build.on.is-selected .st-frame {
+    fill: #4d47fe;
+  }
+  .st-n-build.is-selected .st-halo {
+    opacity: 1;
+    transform: scale(1.25);
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  /* 標籤 */
+  .st-labels {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .st-labels > * {
+    position: absolute;
+  }
+  .st-you {
+    transform: translate(-50%, -50%);
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(1rem, 1.7vw, 1.5rem);
+    color: var(--color-snow-50);
+    text-shadow: 0 2px 12px rgb(14 45 166 / 0.8);
+  }
+  .st-branch {
+    display: grid;
+    gap: 0.2rem;
+    width: max-content;
+    max-width: 11rem;
+    transform: translate(-50%, -50%);
+    text-align: center;
+  }
+  .st-branch.al-1 {
+    transform: translate(0, -50%);
+    text-align: left;
+  }
+  .st-branch.al--1 {
+    transform: translate(-100%, -50%);
+    text-align: right;
+  }
+  .st-branch b {
+    font: 600 0.72rem/1.2 var(--font-mono);
+    letter-spacing: 0.06em;
+    color: var(--color-sky-200);
+    text-transform: uppercase;
+  }
+  .st-branch span {
+    font-size: 0.75rem;
+    line-height: 1.5;
+    color: var(--color-mist-300);
+  }
+  .st-build {
+    pointer-events: auto;
+    width: 0;
+    height: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+  }
+  .st-build-hit {
+    position: absolute;
+    left: -2.25rem;
+    top: -2.25rem;
+    width: 4.5rem;
+    height: 4.5rem;
+    border-radius: 50%;
+  }
+  .st-build:focus-visible {
+    outline: none;
+  }
+  .st-build:focus-visible .st-build-hit {
+    outline: 2px solid var(--color-sky-400);
+    outline-offset: 2px;
+  }
+  .st-build-name {
+    position: absolute;
+    left: 0;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    padding: 0.3rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-snow-50);
+    background: rgb(11 15 56 / 0.85);
+    border: 1px solid rgb(206 171 253 / 0.45);
+    transition:
+      background-color 0.3s,
+      border-color 0.3s;
+  }
+  .st-build.is-above .st-build-name {
+    bottom: 2.6rem;
+  }
+  .st-build.is-below .st-build-name {
+    top: 2.6rem;
+  }
+  .st-build[aria-expanded='true'] .st-build-name,
+  .st-build:hover .st-build-name {
+    background: #4d47fe;
+    border-color: #decffe;
+  }
+
+  /* 流派卡 */
+  .st-dock {
+    margin-top: 2rem;
+  }
+  .st-dock-hint {
+    display: none;
+  }
+  .st-cards {
+    display: grid;
+    gap: 1rem;
+  }
+  @media (min-width: 768px) {
+    .st:not(.is-live) .st-cards {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+  .st-card {
+    position: relative;
+    padding: 1.1rem 1.25rem 1.2rem;
+    border-radius: 0.9rem;
+    background: linear-gradient(180deg, rgb(17 24 73 / 0.94), rgb(11 15 56 / 0.94));
+    border: 1px solid rgb(206 171 253 / 0.32);
+    box-shadow:
+      0 24px 60px -24px rgb(0 0 0 / 0.8),
+      inset 0 1px 0 rgb(255 255 255 / 0.06);
+  }
+  .st-card::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 2px;
+    border-radius: 0.9rem 0.9rem 0 0;
+    background: linear-gradient(90deg, #19acfe, #4d47fe, #decffe);
+  }
+  .st-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    font: 0.66rem/1 var(--font-mono);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-sky-200);
+  }
+  .st-card-tag {
+    padding: 0.25rem 0.45rem;
+    border-radius: 0.3rem;
+    color: var(--color-lavender-100);
+    border: 1px dashed rgb(206 171 253 / 0.5);
+    letter-spacing: 0.05em;
+  }
+  .st-card-name {
+    margin-top: 0.7rem;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.3rem;
+    letter-spacing: -0.01em;
+  }
+  .st-card-stats {
+    display: grid;
+    gap: 0.55rem;
+    margin-top: 0.85rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid rgb(184 192 224 / 0.12);
+  }
+  .st-card-stats div {
+    display: grid;
+    grid-template-columns: 4.75rem 1fr;
+    gap: 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.55;
+  }
+  .st-card-stats dt {
+    color: var(--color-mist-500);
+  }
+  .st-card-stats dd {
+    color: var(--color-snow-50);
+  }
+  .st-card-status {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-top: 0.9rem;
+    font-size: 0.75rem;
+    color: var(--color-lavender-100);
+  }
+  .st-counter {
+    display: none;
+  }
+
+  /* ───────── 動態版 ───────── */
+  .st.is-live .st-wrap {
+    padding-block: 0;
+    min-height: 320vh;
+    align-items: stretch;
+  }
+  .st.is-live .st-col-text {
+    position: relative;
+  }
+  .st.is-live .st-text {
+    position: sticky;
+    top: 0;
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+  }
+  .st.is-live .st-stage {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+  }
+  .st.is-live .st-edges-glow path,
+  .st.is-live .st-edges-lit path {
+    stroke-dashoffset: 1;
+  }
+  .st.is-live .st-stage {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    padding-top: 3.5rem;
+  }
+  .st.is-live .st-tree {
+    width: min(100%, 86svh, 52rem);
+  }
+  .st.is-live .st-dock {
+    position: relative;
+    width: min(100%, 40rem);
+    height: 9.75rem;
+    margin: 0.75rem 0 0;
+  }
+  .st.is-live .st-dock-hint {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    font-size: 0.8125rem;
+    color: var(--color-mist-500);
+    border: 1px dashed rgb(184 192 224 / 0.18);
+    border-radius: 0.9rem;
+    transition: opacity 0.4s var(--ease-run);
+  }
+  .st.is-live .st-dock-hint svg {
+    width: 1rem;
+    height: 1rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.4;
+    stroke-linecap: round;
+  }
+  .st.is-live.has-card .st-dock-hint {
+    opacity: 0;
+  }
+  .st.is-live .st-cards {
+    position: absolute;
+    inset: 0;
+    display: block;
+  }
+  .st.is-live .st-card {
+    position: absolute;
+    inset: 0 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr);
+    gap: 1.5rem;
+    align-items: start;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition:
+      opacity 0.35s var(--ease-run),
+      transform 0.45s var(--ease-run),
+      visibility 0s 0.45s;
+  }
+  .st.is-live .st-card-stats {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
+    padding-left: 1.5rem;
+    border-left: 1px solid rgb(184 192 224 / 0.12);
+  }
+  .st.is-live .st-card.is-open {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    transition:
+      opacity 0.35s var(--ease-run),
+      transform 0.45s var(--ease-run),
+      visibility 0s;
+  }
+  .st.is-live .st-counter {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+    position: absolute;
+    left: 0;
+    top: 6rem;
+    font: 0.7rem/1 var(--font-mono);
+    letter-spacing: 0.18em;
+    color: var(--color-mist-500);
+  }
+  .st-counter b {
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: 0;
+    color: var(--color-snow-50);
+    font-variant-numeric: tabular-nums;
+    margin-left: 0.4rem;
+  }
+  .st-counter i {
+    font-style: normal;
+    color: var(--color-mist-500);
+  }
+  .st.is-live .st-labels .st-branch,
+  .st.is-live .st-labels .st-build-name {
+    opacity: 0;
+    transition: opacity 0.6s var(--ease-run);
+  }
+  .st.is-live .st-labels .is-on,
+  .st.is-live .st-labels .is-on .st-build-name,
+  .st.is-live .st-build:focus-visible .st-build-name,
+  .st.is-live .st-build[aria-expanded='true'] .st-build-name {
+    opacity: 1;
+  }
+
+  @media (max-width: 1023px) {
+    .st.is-live .st-wrap {
+      display: block;
+      min-height: 0;
+      padding-top: clamp(5rem, 12vh, 7rem);
+    }
+    .st.is-live .st-text {
+      position: static;
+      min-height: 0;
+    }
+    .st.is-live .st-col-tree {
+      height: 280vh;
+      margin-top: 2rem;
+    }
+    .st.is-live .st-stage {
+      justify-content: flex-start;
+      padding-top: 6.5rem;
+    }
+    .st.is-live .st-tree {
+      width: 100%;
+    }
+    .st.is-live .st-dock {
+      height: 15.5rem;
+      margin-top: 1.75rem;
+    }
+    .st.is-live .st-card {
+      grid-template-columns: 1fr;
+      gap: 0.7rem;
+      padding: 0.95rem 1.05rem 1rem;
+    }
+    .st.is-live .st-card-stats {
+      padding-left: 0;
+      border-left: 0;
+      padding-top: 0.7rem;
+      border-top: 1px solid rgb(184 192 224 / 0.12);
+      gap: 0.4rem;
+    }
+    .st.is-live .st-card-stats div {
+      font-size: 0.8125rem;
+      grid-template-columns: 4.25rem 1fr;
+    }
+    .st.is-live .st-card-name {
+      font-size: 1.15rem;
+      margin-top: 0.5rem;
+    }
+    .st.is-live .st-card-status {
+      display: none;
+    }
+    .st.is-live .st-counter {
+      display: none;
+    }
+    .st-branch span {
+      display: none;
+    }
+    .st-branch b {
+      font-size: 0.6rem;
+    }
+    .st-build-name {
+      font-size: 0.7rem;
+      padding: 0.22rem 0.5rem;
+    }
+    .st.is-live .st-build.is-above .st-build-name {
+      bottom: 1.6rem;
+    }
+    .st.is-live .st-build.is-below .st-build-name {
+      top: 1.6rem;
+    }
+    .st-build-hit {
+      left: -1.6rem;
+      top: -1.6rem;
+      width: 3.2rem;
+      height: 3.2rem;
+    }
+  }
+</style>

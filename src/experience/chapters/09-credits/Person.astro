@@ -1,0 +1,31 @@
+---
+// 名單中的一個人：有頭像用頭像，沒有就用字母徽章（品牌漸層＋Logo 光點）。
+import type { Person } from '../../../graph';
+
+interface Props {
+  person: Person;
+}
+const { person } = Astro.props;
+const hash = [...person.id].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
+const initial = (Array.from(person.name.trim())[0] ?? '?').toUpperCase();
+const Tag = person.github ? 'a' : 'span';
+---
+
+<Tag
+  class="cr-person"
+  href={person.github ? `https://github.com/${encodeURIComponent(person.github)}` : undefined}
+  rel={person.github ? 'noopener' : undefined}
+>
+  {
+    person.avatar ? (
+      <span class="cr-av">
+        <img src={person.avatar} alt="" width="56" height="56" loading="lazy" decoding="async" />
+      </span>
+    ) : (
+      <span class="cr-av is-initial" style={`--a:${(hash % 120) + 110}deg`} aria-hidden="true">
+        {initial}
+      </span>
+    )
+  }
+  <span class="cr-name">{person.name}</span>
+</Tag>

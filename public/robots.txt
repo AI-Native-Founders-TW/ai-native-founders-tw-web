@@ -1,0 +1,7 @@
+# 所有內容免登入、公開，歡迎搜尋引擎與 AI 讀取（憲法第 17 條）。
+# AI 摘要：/llms.txt　全文：/llms-full.txt　資料：/api/v1/
+User-agent: *
+Allow: /
+
+# 網域尚未定案（A11）；定案後請一併更新這一行與 SITE_URL
+Sitemap: https://ai-native-founders-tw.pages.dev/sitemap.xml

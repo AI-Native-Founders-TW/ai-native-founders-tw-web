@@ -1,0 +1,256 @@
+---
+// 章節 00：開場。光點從黑暗中出現、畫出 A 字、落成 Logo 的光點，再從光點的位置把 Hero 揭開。
+// 全部用 CSS 動畫＋一小段 inline script 完成，不等 JS bundle 下載；總長 1.6 秒。
+// 回訪者（sessionStorage）、帶 hash 的深連結、減少動態時直接略過。沒有 JS 時遮罩根本不會出現。
+import type { Copy } from '../../../i18n/copy';
+import { MARK } from '../../stage/mark';
+
+interface Props {
+  copy: Copy;
+}
+const { copy } = Astro.props;
+---
+
+<section id="ch-00" data-split="00" data-split-name={copy.hud.splits['00']} class="boot" aria-hidden="true">
+  <script is:inline>
+    (function () {
+      var d = document.documentElement;
+      var A = (window.__anf = window.__anf || {});
+      var skip = false;
+      try {
+        skip = sessionStorage.getItem('anf:booted') === '1' || sessionStorage.getItem('anf:skip-run') === '1';
+        sessionStorage.setItem('anf:booted', '1');
+      } catch (e) {}
+      if (location.hash.length > 1) skip = true;
+      if (skip || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        A.skipped = true;
+        A['boot-reveal'] = A['run-start'] = performance.now();
+        d.classList.add('boot-skip');
+        return;
+      }
+      d.classList.add('boot-on');
+      function fire(n) {
+        A[n] = performance.now();
+        window.dispatchEvent(new Event('anf:' + n));
+      }
+      setTimeout(function () { fire('boot-reveal'); }, 1060);
+      setTimeout(function () {
+        d.classList.remove('boot-on');
+        d.classList.add('boot-done');
+        fire('run-start');
+      }, 1600);
+    })();
+  </script>
+  <div class="boot__veil">
+    <div class="boot__stage">
+      <svg class="boot__mark" viewBox={MARK.viewBox} fill="none">
+        <defs>
+          <linearGradient id="boot-leg" gradientUnits="userSpaceOnUse" x1="128" y1="345" x2="282" y2="150">
+            <stop offset="0" stop-color="#ceabfd" />
+            <stop offset="0.55" stop-color="#ecdfff" />
+            <stop offset="1" stop-color="#f6fbfc" />
+          </linearGradient>
+          <linearGradient id="boot-wave" gradientUnits="userSpaceOnUse" x1="262" y1="230" x2="414" y2="350">
+            <stop offset="0" stop-color="#4d47fe" />
+            <stop offset="0.5" stop-color="#1e6bfb" />
+            <stop offset="1" stop-color="#19acfe" />
+          </linearGradient>
+          <radialGradient id="boot-dot" cx="0.35" cy="0.3" r="0.8">
+            <stop offset="0" stop-color="#ffffff" />
+            <stop offset="0.5" stop-color="#decffe" />
+            <stop offset="1" stop-color="#b9a3f5" />
+          </radialGradient>
+          <filter id="boot-glow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="14" />
+          </filter>
+        </defs>
+        <g class="boot__glow" filter="url(#boot-glow)" opacity="0.55">
+          <path class="boot__draw boot__draw--leg" d={MARK.leg} pathLength="1" stroke="url(#boot-leg)" stroke-width={MARK.stroke} stroke-linecap="round" stroke-linejoin="round" />
+          <path class="boot__draw boot__draw--wave" d={MARK.wave} pathLength="1" stroke="url(#boot-wave)" stroke-width={MARK.stroke - 4} stroke-linecap="round" />
+        </g>
+        <path class="boot__draw boot__draw--leg" d={MARK.leg} pathLength="1" stroke="url(#boot-leg)" stroke-width={MARK.stroke} stroke-linecap="round" stroke-linejoin="round" />
+        <path class="boot__draw boot__draw--wave" d={MARK.wave} pathLength="1" stroke="url(#boot-wave)" stroke-width={MARK.stroke - 4} stroke-linecap="round" />
+        <!-- 光點本體沿路徑前進（極短的虛線段＝圓點） -->
+        <path class="boot__head boot__head--leg" d={MARK.leg} pathLength="1" stroke="#fff" stroke-width="22" stroke-linecap="round" />
+        <path class="boot__head boot__head--wave" d={MARK.wave} pathLength="1" stroke="#fff" stroke-width="22" stroke-linecap="round" />
+        <circle class="boot__ring" cx={MARK.dot.cx} cy={MARK.dot.cy} r={MARK.dot.r} stroke="#decffe" stroke-width="2" />
+        <circle class="boot__dot" cx={MARK.dot.cx} cy={MARK.dot.cy} r={MARK.dot.r} fill="url(#boot-dot)" />
+      </svg>
+    </div>
+    <div class="boot__meta">
+      <span class="boot__label">{copy.boot.line}</span>
+      <span class="boot__bar"><i></i></span>
+      <span class="boot__clock">00:00.000</span>
+    </div>
+  </div>
+</section>
+
+<style>
+  @property --hole {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 0px;
+  }
+
+  .boot {
+    position: fixed;
+    inset: 0;
+    z-index: 120;
+    display: none;
+    pointer-events: none;
+    /* 與舞台的光帶 A 同位置、同大小：畫完的 A 直接變成 Hero 的光帶 */
+    --size: var(--mark-S);
+    --dx: calc(var(--mark-cx) + 0.28125 * var(--size));
+    --dy: calc(var(--mark-cy) - 0.1289 * var(--size));
+  }
+  :global(html.boot-on) .boot {
+    display: block;
+  }
+
+  .boot__veil {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(60% 50% at 50% 46%, rgb(30 71 243 / 0.08), transparent 70%),
+      var(--color-night-950);
+    -webkit-mask: radial-gradient(circle at var(--dx) var(--dy), transparent calc(var(--hole) - 2px), #000 var(--hole));
+    mask: radial-gradient(circle at var(--dx) var(--dy), transparent calc(var(--hole) - 2px), #000 var(--hole));
+    animation: boot-hole 540ms cubic-bezier(0.7, 0, 0.18, 1) 1060ms both, boot-gone 1ms linear 1600ms both;
+  }
+
+  .boot__stage {
+    position: absolute;
+    left: calc(var(--mark-cx) - var(--size) / 2);
+    top: calc(var(--mark-cy) - var(--size) / 2);
+    width: var(--size);
+    height: var(--size);
+  }
+  .boot__mark {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    animation: boot-mark-out 560ms cubic-bezier(0.5, 0, 0.2, 1) 1060ms both;
+    transform-origin: 50% 50%;
+  }
+
+  /* 間隔比路徑長、起點多推一點：避免圓頭線帽在路徑兩端留下一個點 */
+  .boot__draw {
+    stroke-dasharray: 1 3;
+    stroke-dashoffset: 1.02;
+  }
+  .boot__draw--leg {
+    animation: boot-draw 560ms cubic-bezier(0.55, 0, 0.25, 1) 80ms both;
+  }
+  .boot__draw--wave {
+    animation: boot-draw 420ms cubic-bezier(0.3, 0, 0.2, 1) 560ms both;
+  }
+
+  .boot__head {
+    stroke-dasharray: 0.0001 2;
+    stroke-dashoffset: 0;
+    opacity: 0;
+    filter: drop-shadow(0 0 10px #decffe) drop-shadow(0 0 24px rgb(25 172 254 / 0.8));
+  }
+  .boot__head--leg {
+    animation:
+      boot-travel 560ms cubic-bezier(0.55, 0, 0.25, 1) 80ms both,
+      boot-head 560ms linear 80ms both;
+  }
+  .boot__head--wave {
+    animation:
+      boot-travel 420ms cubic-bezier(0.3, 0, 0.2, 1) 560ms both,
+      boot-head 420ms linear 560ms both;
+  }
+
+  .boot__dot {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: boot-pop 420ms cubic-bezier(0.34, 1.7, 0.5, 1) 900ms both;
+  }
+  .boot__ring {
+    transform-box: fill-box;
+    transform-origin: center;
+    opacity: 0;
+    animation: boot-ring 600ms cubic-bezier(0.2, 0.7, 0.2, 1) 930ms both;
+  }
+
+  .boot__meta {
+    position: absolute;
+    left: 50%;
+    bottom: max(9vh, 4rem);
+    translate: -50% 0;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-mist-300);
+    white-space: nowrap;
+    animation: boot-meta-out 300ms ease 980ms both;
+  }
+  .boot__bar {
+    position: relative;
+    width: 96px;
+    height: 1px;
+    background: rgb(255 255 255 / 0.14);
+    overflow: hidden;
+  }
+  .boot__bar i {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, #4d47fe, #19acfe);
+    transform-origin: left;
+    animation: boot-bar 900ms cubic-bezier(0.5, 0, 0.2, 1) 60ms both;
+  }
+  .boot__clock {
+    color: var(--color-snow-50);
+    font-variant-numeric: tabular-nums;
+  }
+
+  @keyframes boot-draw {
+    to { stroke-dashoffset: 0; }
+  }
+  @keyframes boot-travel {
+    from { stroke-dashoffset: 0; }
+    to { stroke-dashoffset: -1; }
+  }
+  @keyframes boot-head {
+    0% { opacity: 0; }
+    12% { opacity: 1; }
+    88% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+  @keyframes boot-pop {
+    from { transform: scale(0); }
+    to { transform: scale(1); }
+  }
+  @keyframes boot-ring {
+    0% { opacity: 0; transform: scale(0.6); }
+    8% { opacity: 0.9; }
+    100% { opacity: 0; transform: scale(3.2); }
+  }
+  @keyframes boot-bar {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+  }
+  @keyframes boot-meta-out {
+    to { opacity: 0; transform: translateY(6px); }
+  }
+  @keyframes boot-mark-out {
+    0% { opacity: 1; filter: blur(0); }
+    100% { opacity: 0; filter: blur(6px); }
+  }
+  @keyframes boot-hole {
+    from { --hole: 0px; }
+    to { --hole: 160vmax; }
+  }
+  @keyframes boot-gone {
+    to { visibility: hidden; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .boot { display: none !important; }
+  }
+</style>

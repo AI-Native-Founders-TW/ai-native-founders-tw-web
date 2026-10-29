@@ -1,0 +1,611 @@
+---
+import { getPeople } from '../../../graph';
+// 章節 06：AI-Native。終端機／Agent 介面：在瀏覽器裡用關鍵字比對公開的 R&R，不呼叫外部 AI。
+import type { Copy } from '../../../i18n/copy';
+import { type DemoPerson, match } from './match';
+import { type TerminalCopy, transcript } from './render';
+
+interface Props {
+  copy: Copy;
+}
+const { copy } = Astro.props;
+const a = copy.aiNative;
+const t = a.terminal as TerminalCopy & {
+  title: string;
+  path: string;
+  badge: string;
+  inputLabel: string;
+  placeholder: string;
+  submit: string;
+  suggestions: string[];
+};
+
+// 只送出本人公開、可比對的欄位
+const people: DemoPerson[] = (await getPeople())
+  .map((p) => ({
+    id: p.id,
+    name: p.name,
+    github: p.github,
+    avatar: p.avatar,
+    hasIntro: p.hasIntro,
+    roles: p.roles ?? [],
+    canHelp: p.canHelp ?? [],
+    wantHelp: p.wantHelp ?? [],
+  }))
+  .filter((p) => p.roles.length || p.canHelp.length || p.wantHelp.length);
+
+const first = match(a.prompt, people);
+const staticLog = transcript(t, a.prompt, people.length, first.keys, first.matches);
+
+// 建議問題：優先放找得到人的
+const suggestions = [...(t.suggestions ?? [])].sort(
+  (x, y) =>
+    Number(match(y, people).matches.length > 0) - Number(match(x, people).matches.length > 0),
+);
+const points: string[] = a.points;
+const pad = (n: number) => String(n).padStart(2, '0');
+// 標題在逗號後斷行，避免把詞拆開
+const titleParts: string[] = String(a.title).split(/(?<=[，,])\s*/);
+---
+
+<section
+  id="ch-06"
+  data-split="06"
+  data-split-name={copy.hud.splits['06']}
+  class="ch06 relative isolate"
+  aria-labelledby="ch06-title"
+>
+  <header class="ch06-head container-run">
+    <p class="ch06-kicker">{a.kicker}</p>
+    <h2 id="ch06-title" class="ch06-title">{titleParts.map((part) => <span class="ch06-title-part">{part}</span>)}</h2>
+  </header>
+  <div class="ch06-grid container-run">
+    <div class="ch06-copy">
+      <p class="ch06-body">{a.body}</p>
+      <ol class="ch06-points">
+        {
+          points.map((p, i) => (
+            <li class="ch06-point" data-ch06-point>
+              <span class="ch06-point-num" aria-hidden="true">{pad(i + 1)}</span>
+              <span>{p}</span>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+
+    <div class="ch06-term-wrap">
+      <div class="ch06-term-glow" aria-hidden="true"></div>
+      <div class="ch06-term" data-ch06-term>
+        <div class="ch06-term-bar">
+          <span class="ch06-term-id"><span class="ch06-term-dot" aria-hidden="true"></span>{t.title}</span>
+          <span class="ch06-term-path" aria-hidden="true">{t.path}</span>
+          <span class="ch06-term-badge"><span class="ch06-term-live" aria-hidden="true"></span>{t.badge}</span>
+        </div>
+        <ol class="ch06-log" data-ch06-log set:html={staticLog} />
+        <p class="sr-only" aria-live="polite" data-ch06-status></p>
+        <div class="ch06-term-foot">
+          <div class="ch06-chips" role="group" aria-label={t.inputLabel}>
+            {
+              suggestions.map((s) => (
+                <button type="button" class="ch06-chip" data-q={s}>
+                  {s}
+                </button>
+              ))
+            }
+          </div>
+          <form class="ch06-form" data-ch06-form action="#ch-06">
+            <label for="ch06-q" class="sr-only">{t.inputLabel}</label>
+            <span class="ch06-form-sig" aria-hidden="true">›</span>
+            <input
+              id="ch06-q"
+              name="q"
+              type="text"
+              class="ch06-input"
+              placeholder={t.placeholder}
+              autocomplete="off"
+              spellcheck="false"
+              maxlength="80"
+              enterkeyhint="search"
+            />
+            <button type="submit" class="ch06-submit">{t.submit}<span aria-hidden="true">↵</span></button>
+          </form>
+        </div>
+      </div>
+      <p class="ch06-disclaimer">
+        <svg viewBox="0 0 16 16" aria-hidden="true" width="16" height="16"
+          ><circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.2"></circle><path
+            d="M8 7v4.2M8 4.6v.2"
+            stroke="currentColor"
+            stroke-width="1.4"
+            stroke-linecap="round"></path></svg
+        >
+        <span>{a.disclaimer}</span>
+      </p>
+    </div>
+  </div>
+
+  <script
+    type="application/json"
+    data-ch06-data
+    set:html={JSON.stringify({ people, t, prompt: a.prompt }).replace(/</g, '\\u003c')}
+  />
+</section>
+
+<script>
+  import { initAiNative } from './scene';
+  initAiNative();
+</script>
+
+<style>
+  .ch06 {
+    padding-block: clamp(7rem, 18vh, 12rem);
+  }
+  .ch06-head {
+    margin-bottom: clamp(3rem, 7vh, 4.5rem);
+  }
+  .ch06-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
+    gap: clamp(2.5rem, 5vw, 5.5rem);
+    align-items: start;
+  }
+  .ch06-kicker {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--color-mist-300);
+  }
+  .ch06-title {
+    margin-top: 1.5rem;
+    font-family: 'Noto Sans TC', var(--font-display);
+    font-weight: 800;
+    font-size: clamp(2.1rem, 4.4vw, 4.1rem);
+    line-height: 1.18;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+  .ch06-title-part {
+    display: inline-block;
+  }
+  .ch06-body {
+    margin-top: 0.25rem;
+    font-size: 1.08rem;
+    line-height: 1.85;
+    color: var(--color-mist-300);
+    max-width: 30em;
+  }
+  .ch06-points {
+    margin-top: 2.5rem;
+    border-top: 1px solid rgb(184 192 224 / 0.14);
+  }
+  .ch06-point {
+    display: grid;
+    grid-template-columns: 3.25rem 1fr;
+    align-items: baseline;
+    padding-block: 1.35rem;
+    border-bottom: 1px solid rgb(184 192 224 / 0.14);
+    font-size: 1.12rem;
+    font-weight: 500;
+    line-height: 1.6;
+  }
+  .ch06-point-num {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.05rem;
+    letter-spacing: -0.02em;
+    background: var(--gradient-text);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* ---------- 終端機 ---------- */
+  .ch06-term-wrap {
+    position: relative;
+  }
+  .ch06-term-glow {
+    position: absolute;
+    inset: 8% -6% -4%;
+    z-index: -1;
+    background:
+      radial-gradient(50% 45% at 30% 30%, rgb(77 71 254 / 0.35), transparent 70%),
+      radial-gradient(45% 40% at 80% 80%, rgb(25 172 254 / 0.22), transparent 70%);
+    filter: blur(40px);
+  }
+  .ch06-term {
+    position: relative;
+    border-radius: 18px;
+    border: 1px solid transparent;
+    background:
+      linear-gradient(180deg, rgb(13 18 64 / 0.96), rgb(8 11 42 / 0.97)) padding-box,
+      linear-gradient(140deg, rgb(206 171 253 / 0.55), rgb(30 71 243 / 0.18) 40%, rgb(25 172 254 / 0.5)) border-box;
+    box-shadow:
+      0 50px 120px -50px rgb(0 0 0 / 0.9),
+      inset 0 1px 0 rgb(255 255 255 / 0.06);
+    overflow: hidden;
+    font-family: var(--font-mono);
+  }
+  .ch06-term::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(0deg, rgb(255 255 255 / 0.018) 0 1px, transparent 1px 3px);
+  }
+  .ch06-term-bar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    height: 3rem;
+    padding-inline: 1.25rem;
+    border-bottom: 1px solid rgb(184 192 224 / 0.12);
+    font-size: 0.78rem;
+    color: var(--color-mist-300);
+  }
+  .ch06-term-id {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: var(--color-snow-50);
+    font-weight: 600;
+  }
+  .ch06-term-dot {
+    width: 0.6rem;
+    height: 0.6rem;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #f6fbfc, #decffe 55%, #9d93f6);
+    box-shadow: 0 0 10px rgb(222 207 254 / 0.8);
+  }
+  .ch06-term-path {
+    flex: 1;
+    color: var(--color-mist-500);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .ch06-term-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.25rem 0.65rem;
+    border-radius: 999px;
+    background: rgb(25 172 254 / 0.1);
+    box-shadow: inset 0 0 0 1px rgb(25 172 254 / 0.35);
+    color: var(--color-sky-200);
+    font-size: 0.72rem;
+    white-space: nowrap;
+  }
+  .ch06-term-live {
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 50%;
+    background: var(--color-sky-400);
+    box-shadow: 0 0 8px var(--color-sky-400);
+    animation: ch06-live 2s ease-in-out infinite;
+  }
+  @keyframes ch06-live {
+    50% {
+      opacity: 0.35;
+    }
+  }
+
+  .ch06-log {
+    height: clamp(22rem, 48vh, 27rem);
+    overflow-y: auto;
+    padding: 1.4rem 1.4rem 1rem;
+    font-size: 0.9rem;
+    line-height: 1.7;
+    scrollbar-width: thin;
+    scrollbar-color: rgb(184 192 224 / 0.2) transparent;
+  }
+  .ch06-log :global(.ln) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 0.6rem;
+    padding-block: 0.2rem;
+    color: var(--color-mist-300);
+  }
+  .ch06-log :global(.ln-sig) {
+    width: 1rem;
+    flex: none;
+    color: var(--color-mist-500);
+  }
+  .ch06-log :global(.ln-user) {
+    color: var(--color-snow-50);
+    font-size: 1.05rem;
+    padding-bottom: 0.6rem;
+  }
+  .ch06-log :global(.ln-user .ln-sig) {
+    color: var(--color-lavender-300);
+  }
+  .ch06-log :global(.ln-q) {
+    font-family: var(--font-mono), 'Noto Sans TC', monospace;
+  }
+  .ch06-log :global(.ln-caret) {
+    display: inline-block;
+    width: 0.55em;
+    height: 1.15em;
+    margin-left: 2px;
+    vertical-align: -0.2em;
+    background: var(--color-lavender-100);
+    animation: ch06-blink 1s steps(1) infinite;
+  }
+  @keyframes ch06-blink {
+    50% {
+      opacity: 0;
+    }
+  }
+  .ch06-log :global(.ln-dim) {
+    color: var(--color-mist-500);
+  }
+  .ch06-log :global(.ln-keys) {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+  .ch06-log :global(.ln-key) {
+    padding: 0 0.45rem;
+    border-radius: 4px;
+    background: rgb(77 71 254 / 0.18);
+    color: var(--color-lavender-100);
+    font-size: 0.8rem;
+  }
+  .ch06-log :global(.ln-think) {
+    color: var(--color-sky-200);
+  }
+  .ch06-log :global(.ln-spin) {
+    color: var(--color-sky-400);
+  }
+  .ch06-log :global(.ln-bar) {
+    position: relative;
+    flex: 1;
+    min-width: 6rem;
+    height: 2px;
+    align-self: center;
+    background: rgb(184 192 224 / 0.12);
+    overflow: hidden;
+    border-radius: 2px;
+  }
+  .ch06-log :global(.ln-bar > span) {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 40%;
+    background: linear-gradient(90deg, transparent, #19acfe, #decffe);
+    animation: ch06-scan 1.1s var(--ease-snap) infinite;
+  }
+  @keyframes ch06-scan {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(260%);
+    }
+  }
+  .ch06-log :global(.ln-ok) {
+    color: var(--color-snow-50);
+    font-weight: 600;
+    padding-top: 0.5rem;
+  }
+  .ch06-log :global(.ln-ok .ln-sig) {
+    color: var(--color-sky-400);
+  }
+  .ch06-log :global(.ln-none) {
+    color: var(--color-lavender-100);
+    padding-top: 0.5rem;
+    font-family: var(--font-sans);
+  }
+  .ch06-log :global(.ln-res) {
+    display: block;
+    padding: 0.35rem 0 0 1.6rem;
+  }
+  .ch06-log :global(.res) {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.85rem;
+    align-items: center;
+    padding: 0.7rem 0.9rem;
+    border-radius: 12px;
+    background: rgb(255 255 255 / 0.035);
+    box-shadow: inset 0 0 0 1px rgb(184 192 224 / 0.12);
+    font-family: var(--font-sans);
+  }
+  .ch06-log :global(.res-av) {
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 50%;
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+    background: var(--color-night-800);
+    box-shadow:
+      0 0 0 1.5px rgb(222 207 254 / 0.55),
+      0 0 18px -4px rgb(77 71 254 / 0.8);
+  }
+  .ch06-log :global(.res-av img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .ch06-log :global(.res-av.is-initial) {
+    background: var(--gradient-brand);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--color-snow-50);
+  }
+  .ch06-log :global(.res-head) {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+  }
+  .ch06-log :global(.res-name) {
+    font-weight: 700;
+    font-size: 1.08rem;
+    color: var(--color-snow-50);
+    text-decoration: none;
+  }
+  .ch06-log :global(a.res-name:hover) {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .ch06-log :global(.res-handle) {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--color-mist-500);
+  }
+  .ch06-log :global(.res-hits) {
+    margin-top: 0.15rem;
+    display: grid;
+    gap: 0.25rem;
+  }
+  .ch06-log :global(.res-hits li) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    align-items: baseline;
+    font-size: 0.92rem;
+    color: var(--color-mist-300);
+  }
+  .ch06-log :global(.res-field) {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.04em;
+    color: var(--color-sky-200);
+    white-space: nowrap;
+  }
+  .ch06-log :global(.res-src) {
+    color: var(--color-mist-500);
+  }
+  .ch06-log :global(mark) {
+    background: linear-gradient(transparent 55%, rgb(25 172 254 / 0.38) 55%) no-repeat 0 0 / 100% 100%;
+    color: var(--color-snow-50);
+    padding: 0 1px;
+  }
+
+  .ch06-term-foot {
+    border-top: 1px solid rgb(184 192 224 / 0.12);
+    padding: 0.9rem 1rem 1rem;
+    display: grid;
+    gap: 0.75rem;
+  }
+  .ch06-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+  }
+  .ch06-chip {
+    font: inherit;
+    font-family: var(--font-sans);
+    font-size: 0.82rem;
+    color: var(--color-mist-300);
+    padding: 0.35rem 0.8rem;
+    border-radius: 999px;
+    background: rgb(255 255 255 / 0.03);
+    box-shadow: inset 0 0 0 1px rgb(184 192 224 / 0.2);
+    cursor: pointer;
+    transition:
+      color 0.2s,
+      box-shadow 0.2s,
+      background 0.2s;
+  }
+  .ch06-chip:hover {
+    color: var(--color-snow-50);
+    background: rgb(77 71 254 / 0.16);
+    box-shadow: inset 0 0 0 1px rgb(206 171 253 / 0.55);
+  }
+  .ch06-form {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.35rem 0.4rem 0.35rem 0.9rem;
+    border-radius: 12px;
+    background: rgb(0 0 0 / 0.25);
+    box-shadow: inset 0 0 0 1px rgb(184 192 224 / 0.18);
+    transition: box-shadow 0.2s;
+  }
+  .ch06-form:focus-within {
+    box-shadow:
+      inset 0 0 0 1px rgb(25 172 254 / 0.8),
+      0 0 0 4px rgb(25 172 254 / 0.15);
+  }
+  .ch06-form-sig {
+    color: var(--color-lavender-300);
+  }
+  .ch06-input {
+    flex: 1;
+    min-width: 0;
+    background: none;
+    border: 0;
+    color: var(--color-snow-50);
+    font: inherit;
+    font-family: var(--font-mono), 'Noto Sans TC', monospace;
+    font-size: 0.95rem;
+    padding-block: 0.55rem;
+  }
+  .ch06-input::placeholder {
+    color: var(--color-mist-500);
+  }
+  .ch06-input:focus {
+    outline: none;
+  }
+  .ch06-submit {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font: inherit;
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-snow-50);
+    padding: 0.5rem 0.95rem;
+    border-radius: 9px;
+    background: var(--gradient-brand);
+    cursor: pointer;
+    transition: filter 0.2s;
+  }
+  .ch06-submit:hover {
+    filter: brightness(1.15);
+  }
+  .ch06-disclaimer {
+    margin-top: 1rem;
+    display: flex;
+    gap: 0.6rem;
+    align-items: flex-start;
+    font-size: 0.85rem;
+    line-height: 1.65;
+    color: var(--color-mist-300);
+  }
+  .ch06-disclaimer svg {
+    flex: none;
+    margin-top: 0.2rem;
+    color: var(--color-sky-200);
+  }
+
+  @media (max-width: 1023px) {
+    .ch06-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 767px) {
+    .ch06-log {
+      height: 25rem;
+      padding: 1.1rem 1rem 0.8rem;
+      font-size: 0.85rem;
+    }
+    .ch06-term-path {
+      display: none;
+    }
+    .ch06-input {
+      font-size: 1rem;
+    }
+    .ch06-term-bar {
+      justify-content: space-between;
+    }
+    .ch06-log :global(.ln-res) {
+      padding-left: 0;
+    }
+  }
+</style>

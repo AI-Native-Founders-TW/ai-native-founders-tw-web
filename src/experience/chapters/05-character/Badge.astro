@@ -1,0 +1,72 @@
+---
+/**
+ * 五個起點的徽章。語彙取自 Logo：
+ * - 亮色緞帶（ch05-g-light：lavender → snow），像 A 的左腳
+ * - 藍色緞帶（ch05-g-blue：iris → sky），像 A 的右翼，畫在亮色之下形成摺痕
+ * - 光點（ch05-g-dot），代表「你」
+ * 漸層定義在 Chapter.astro 的共用 <defs>。viewBox 一律 0 0 120 120、筆畫 11、圓角端點。
+ */
+interface Props {
+  id: string;
+  class?: string;
+}
+const { id, class: cls } = Astro.props;
+---
+
+<svg class:list={['ch05-badge', cls]} viewBox="0 0 120 120" fill="none" aria-hidden="true" data-badge={id}>
+  {
+    id === 'student' && (
+      <g stroke-linecap="round" stroke-linejoin="round">
+        {/* 翻開的書：左頁亮、右頁藍；光點是剛冒出來的念頭 */}
+        <path d="M60 52 C48 42 34 40 20 44 L20 84 C34 80 48 82 60 92" stroke="url(#ch05-g-blue)" stroke-width="11" />
+        <path d="M60 52 C72 42 86 40 100 44 L100 84 C86 80 72 82 60 92" stroke="url(#ch05-g-light)" stroke-width="11" />
+        <path d="M60 54 L60 90" stroke="url(#ch05-g-light)" stroke-width="5" opacity="0.55" />
+        <circle class="ch05-dot" cx="60" cy="22" r="9" fill="url(#ch05-g-dot)" />
+      </g>
+    )
+  }
+  {
+    id === 'pm' && (
+      <g stroke-linecap="round" stroke-linejoin="round">
+        {/* 岔路：每天都在做決定；光點停在選定的那一條 */}
+        <path d="M60 102 L60 70 C60 56 50 46 30 36" stroke="url(#ch05-g-blue)" stroke-width="11" />
+        <path d="M60 102 L60 70 C60 56 70 46 88 38" stroke="url(#ch05-g-light)" stroke-width="11" />
+        <circle cx="24" cy="30" r="6.5" stroke="url(#ch05-g-blue)" stroke-width="3" opacity="0.7" />
+        <circle class="ch05-dot" cx="98" cy="28" r="9" fill="url(#ch05-g-dot)" />
+      </g>
+    )
+  }
+  {
+    id === 'employee' && (
+      <g stroke-linecap="round" stroke-linejoin="round">
+        {/* 筆電：白天的工作；螢幕裡亮著的光點，是下班後自己的事 */}
+        <path d="M14 90 L106 90" stroke="url(#ch05-g-blue)" stroke-width="11" />
+        <path d="M28 76 L28 36 C28 32 30 30 34 30 L86 30 C90 30 92 32 92 36 L92 76" stroke="url(#ch05-g-light)" stroke-width="10" />
+        <path d="M46 62 L56 52 L64 58 L76 46" stroke="url(#ch05-g-blue)" stroke-width="5" opacity="0.85" />
+        <circle class="ch05-dot" cx="76" cy="46" r="7.5" fill="url(#ch05-g-dot)" />
+      </g>
+    )
+  }
+  {
+    id === 'founder' && (
+      <g stroke-linecap="round" stroke-linejoin="round">
+        {/* 正在攻頂的 A：藍色翼面在下、亮色腳在上，峰頂插著旗 */}
+        <path d="M54 34 C64 52 78 80 98 96" stroke="url(#ch05-g-blue)" stroke-width="12" />
+        <path d="M22 96 L54 34" stroke="url(#ch05-g-light)" stroke-width="12" />
+        <path d="M54 32 L54 12 L72 18 L54 24" stroke="url(#ch05-g-light)" stroke-width="5" fill="url(#ch05-g-light)" />
+        <circle class="ch05-dot" cx="92" cy="42" r="9" fill="url(#ch05-g-dot)" />
+      </g>
+    )
+  }
+  {
+    id === 'senior' && (
+      <g stroke-linecap="round" stroke-linejoin="round">
+        {/* 燈塔：前輩的一次分享，照亮後面很多人的路 */}
+        <path d="M30 100 L90 100" stroke="url(#ch05-g-blue)" stroke-width="10" />
+        <path d="M48 98 L53 50 L67 50 L72 98" stroke="url(#ch05-g-light)" stroke-width="10" />
+        <path d="M78 26 L104 16 M78 38 L104 48 M42 26 L16 16 M42 38 L16 48" stroke="url(#ch05-g-blue)" stroke-width="6" />
+        <circle class="ch05-dot" cx="60" cy="32" r="10" fill="url(#ch05-g-dot)" />
+      </g>
+    )
+  }
+</svg>

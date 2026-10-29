@@ -1,0 +1,104 @@
+---
+// 光點游標：Logo 右上那顆點＝「你」。
+// 桌機（精確指標）才啟用：帶慣性跟著游標，後面拖著一個淡淡的「ghost」（speedrun 的幽靈紀錄），
+// 靠近 [data-magnetic] 的 CTA 時被吸過去並包住按鈕。觸控裝置不顯示，改由舞台上的點呼吸。
+---
+
+<div class="orb" aria-hidden="true">
+  <span class="orb__ghost"></span>
+  <span class="orb__halo"></span>
+  <span class="orb__core"></span>
+</div>
+
+<style>
+  .orb {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 95;
+    pointer-events: none;
+    display: none;
+  }
+  :global(html.orb-on) .orb {
+    display: block;
+    visibility: hidden;
+  }
+  :global(html.orb-live) .orb {
+    visibility: visible;
+  }
+  .orb > span {
+    position: absolute;
+    left: 0;
+    top: 0;
+    border-radius: 50%;
+    will-change: transform;
+  }
+  .orb__core {
+    width: 14px;
+    height: 14px;
+    margin: -7px 0 0 -7px;
+    background: radial-gradient(circle at 35% 30%, #fff 0%, #decffe 55%, #b9a3f5 100%);
+    box-shadow: 0 0 10px rgb(222 207 254 / 0.9), 0 0 26px rgb(77 71 254 / 0.6);
+    transition: opacity 0.3s var(--ease-run);
+  }
+  .orb__halo {
+    width: 44px;
+    height: 44px;
+    margin: -22px 0 0 -22px;
+    border: 1px solid rgb(222 207 254 / 0.35);
+    background: radial-gradient(circle, rgb(222 207 254 / 0.1), transparent 70%);
+    transition:
+      width 0.5s var(--ease-run),
+      height 0.5s var(--ease-run),
+      margin 0.5s var(--ease-run),
+      border-radius 0.5s var(--ease-run),
+      border-color 0.4s,
+      background-color 0.4s,
+      opacity 0.4s;
+  }
+  .orb__ghost {
+    width: 10px;
+    height: 10px;
+    margin: -5px 0 0 -5px;
+    background: rgb(143 216 255 / 0.5);
+    filter: blur(1px);
+    opacity: 0.6;
+  }
+  /* 在連結、按鈕上：光暈放大成一圈 */
+  :global(html.orb-hover) .orb__halo {
+    width: 64px;
+    height: 64px;
+    margin: -32px 0 0 -32px;
+    border-color: rgb(222 207 254 / 0.7);
+    background-color: rgb(222 207 254 / 0.06);
+  }
+  /* 被 CTA 吸住：光暈變成按鈕的形狀 */
+  :global(html.orb-stick) .orb__core {
+    opacity: 0;
+  }
+  :global(html.orb-stick) .orb__halo {
+    border-color: rgb(222 207 254 / 0.9);
+    background: transparent;
+  }
+  :global(html.orb-text) .orb__halo,
+  :global(html.orb-text) .orb__ghost {
+    opacity: 0;
+  }
+  :global(html.orb-press) .orb__core {
+    scale: 0.6;
+  }
+
+  /* 自訂游標時把系統游標藏起來；文字輸入區保留系統游標 */
+  :global(html.orb-live),
+  :global(html.orb-live *) {
+    cursor: none !important;
+  }
+  :global(html.orb-live :is(input, textarea, select, [contenteditable='true'])) {
+    cursor: auto !important;
+  }
+</style>
+
+<script>
+  import { initOrb } from './index';
+  initOrb();
+</script>

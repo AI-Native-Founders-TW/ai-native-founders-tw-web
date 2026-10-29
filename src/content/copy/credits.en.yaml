@@ -1,0 +1,61 @@
+# /en/credits copy. Same keys as credits.zh-tw.yaml.
+
+meta:
+  title: Credits · AI-Native Global Founders Speedrun Taiwan
+  description: Who built the website, who contributed to the organization's documents, and who shows up in the community — generated from git history, the mono repo and credits.yml.
+
+hero:
+  kicker: Credits · Roll
+  title: Everyone's work
+  titleAccent: deserves to be seen.
+  body: Nobody maintains this list by hand. Code comes from git history, document credits come from the "contributors" section at the end of each mono document, and design, copy and other work git can't see lives in credits.yml.
+  stats:
+    people: contributors
+    contributions: contributions
+    documents: credited documents
+  source: Source
+  generated: Generated
+  fallback: The mono repo couldn't be read; this is placeholder data.
+
+sections:
+  website:
+    kicker: Layer 01
+    title: Website
+    body: Owner, collaborators and every role, plus everyone who has committed to this site's repo.
+  org:
+    kicker: Layer 02
+    title: Organization documents
+    body: People credited for the information, experience and insight behind each mono document (constitution, article 10).
+    people: By person
+    docs: By document
+    docCount: documents
+  community:
+    kicker: Layer 03
+    title: Community
+    body: Commit authors on the mono repo, and merged self-introductions.
+    introsTitle: Intros
+    introsEmpty: No intros merged yet. Yours could be the first.
+    introsCta: Submit your intro
+    commitsTitle: Commit authors on mono
+
+labels:
+  commits: commits
+  commit: commit
+  tool: AI tool
+  intro: Intro
+  roles: Meeting assignments
+  viewDoc: View on GitHub
+  viewIntro: Read intro
+
+howto:
+  title: How to add yourself
+  items:
+    - k: Code
+      v: Commit to this repo or the mono repo; you'll show up on the next build.
+    - k: Design, copy, discussion
+      v: Add yourself under website.roles in src/content/credits.yml in the same PR.
+    - k: Avatar
+      v: Add your GitHub username in credits.yml to use your GitHub avatar.
+    - k: Name mismatch
+      v: If you go by more than one name, merge them with aliases in credits.yml.
+  cta: Edit credits.yml

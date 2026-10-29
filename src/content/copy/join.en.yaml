@@ -1,0 +1,128 @@
+# /en/join copy. Same keys as join.zh-tw.yaml; anything missing falls back to Chinese.
+# Rules: no background or track-record requirements; no promised review times; nothing from unadopted "Note" ideas.
+
+meta:
+  title: Join · AI-Native Global Founders Speedrun Taiwan
+  description: The only way in is an honest self-introduction, submitted as a pull request. Four steps, straight answers, and an intro builder that runs entirely in your browser.
+
+hero:
+  kicker: Join · The route in
+  title: One honest intro.
+  titleAccent: That's your starting line.
+  body: The only requirement is a self-introduction submitted as a pull request. We look for sincerity, not background, résumé or track record. No project yet? Still figuring it out? Say so.
+  ctaPrimary: Write your intro
+  ctaSecondary: Read how applying works
+  facts:
+    - k: Cost
+      v: Free to join
+    - k: To join
+      v: One intro PR
+    - k: We look for
+      v: Sincerity, not pedigree
+
+steps:
+  kicker: Route · Four checkpoints
+  title: Four steps to the finish line.
+  body: Starring the repo and joining the event thread are welcome but optional. Membership starts once your intro PR is approved.
+  open: Open
+  final: Finish
+
+builder:
+  kicker: Intro builder
+  title: Follow the template, one field at a time.
+  body: The fields mirror the Members/README template in the mono repo. Markdown updates live on the right. When you're ready, the button opens GitHub's new-file page; you review it and open the PR yourself.
+  privacy: The builder runs only in your browser and sends nothing anywhere. Your draft stays in this browser. Nothing is public until you submit it on GitHub.
+  groups:
+    - id: you
+      title: About you
+    - id: why
+      title: Why you're here
+    - id: rnr
+      title: Your R&R
+      note: Your R&R (roles and responsibilities) has to be clear before you submit; it can't be filled in later. The clearer it is, the easier it is for anyone organizing something to find people via AI. It is not a promise to take on any specific work.
+  fields:
+    name:
+      label: Name, or what people call you
+      placeholder: e.g. Alex
+    github:
+      label: GitHub username
+      hint: Used to suggest the file name (<username>.md). A convenience, not a requirement.
+      placeholder: your-github
+    about:
+      label: Who you are
+      hint: What you're working on and what you care about. Founding, building, employed, studying or still exploring — all fine, just be honest.
+      placeholder: e.g. Ex-Taipei PM, now building a dev tool in SF…
+    contact:
+      label: Other contact or links to your work
+      hint: Only what you're happy to make public.
+      placeholder: https://
+    why:
+      label: Why you want to join
+      hint: A recent problem, an experience, or something you want to try.
+    seek:
+      label: What you hope to get
+      hint: What do you most want to figure out or learn, or who do you want to meet? The more specific, the easier it is for people to reach out.
+    share:
+      label: What you can share
+      hint: Experience, stories, know-how, or what you're trying right now. Unfinished is fine.
+    canHelp:
+      label: What you can help with
+      hint: Concretely, what you can help with today and how much. One per line.
+      placeholder: "- Fundraising decks\n- Intro to US incorporation"
+    wantHelp:
+      label: What you want to help with
+      hint: Activities or work you'd like to join, or things you want to learn by doing. One per line.
+      placeholder: "- Answering questions from Taiwanese founders\n- Hosting a talk"
+  optional: optional
+  preview: Preview
+  filename: File
+  copy: Copy Markdown
+  copied: Copied
+  reset: Clear
+  resetConfirm: Clear every field?
+  progress: Done
+  missing: Still empty
+  review: Before you submit, read every line yourself to make sure it's true and contains nothing you don't want public. The full requirements are in the submission steps of Members/README.
+  confirm: I've reviewed the whole thing myself. It's accurate and has nothing I don't want public.
+  submit: Create my intro on GitHub
+  submitHint: Opens GitHub in a new tab (sign-in required). If you don't have write access, GitHub forks the repo for you; then click "Propose new file" → "Create pull request".
+  tooLong: This is long; GitHub may not carry all of it over. If the page is empty, copy the Markdown and paste it in.
+  guide: Prefer doing it by hand? Follow Members/README
+
+faq:
+  kicker: FAQ
+  title: Straight answers.
+  sources: Source
+  items:
+    - q: I have no track record and no project. Can I join?
+      a: Yes. Background, skill and experience are not conditions for joining; we only look at intent. A sincere intro from someone with no experience and no project is welcome. If you're still working out whether founding is for you, just say that.
+      refs: [constitution, application]
+    - q: Can I write my intro with AI?
+      a: Yes — that's completely normal. Review is about sincerity, not writing quality. Just read the whole thing yourself before submitting, so nothing invented or overcommitted slips in, and nothing you'd rather keep private.
+      refs: [application, membersGuide]
+    - q: Does joining Discord make me a member?
+      a: No. Membership comes from an approved intro PR. Discord is where people talk, join events and find collaborators; you'll be invited, but it isn't a requirement. Same for starring the repo or posting in the event thread.
+      refs: [application]
+    - q: Do I have to help out once I'm in?
+      a: No. Everyone is a volunteer and nobody is assigned work. Members are expected to take part at a basic level rather than lurk forever; what that means exactly is still being discussed. The R&R in your intro is what you're open to, not a commitment.
+      refs: [constitution, participation]
+    - q: Does it cost anything to join?
+      a: No. The only step to join is a self-intro PR. There are no paid placements in notes or events, and we never promote anyone's company.
+      refs: [application, constitution]
+    - q: I've never used GitHub. Now what?
+      a: Follow Members/README — sign in, fork, add your intro under Members/, open a PR. Or use the builder above; it takes you straight to GitHub's new-file page. Stuck? Ask in Discord.
+      refs: [membersGuide, discord]
+    - q: How long does review take, and who reviews?
+      a: Honestly, that hasn't been decided. Reviewers, process and permissions are still being worked out, so we won't promise a turnaround. Opening the PR is your application; if anything needs adding, you'll see review comments on the PR.
+      refs: [review]
+  refLabels:
+    constitution: Constitution
+    application: Application process
+    membersGuide: Members/README
+    participation: Member participation
+    review: Intro review (TODO)
+    discord: Discord
+
+event:
+  kicker: Happening now
+  cta: Add your question

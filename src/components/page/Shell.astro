@@ -1,0 +1,28 @@
+---
+// 內頁外框：Base＋Header＋Footer＋共用樣式與背景光暈。
+import type { Copy } from '../../i18n/copy';
+import Base from '../../layouts/Base.astro';
+import Footer from '../Footer.astro';
+import Header from '../Header.astro';
+import './page.css';
+
+interface Props {
+  copy: Copy;
+  title?: string;
+  description?: string;
+}
+const { copy, title, description } = Astro.props;
+---
+
+<Base title={title} description={description}>
+  <Header copy={copy} />
+  <div class="pg-backdrop" aria-hidden="true">
+    <div class="pg-backdrop-orb pg-backdrop-orb--a"></div>
+    <div class="pg-backdrop-orb pg-backdrop-orb--b"></div>
+    <div class="pg-backdrop-grid"></div>
+  </div>
+  <main id="main" class="pg-main">
+    <slot />
+  </main>
+  <Footer copy={copy} />
+</Base>

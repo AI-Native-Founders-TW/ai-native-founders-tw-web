@@ -1,0 +1,197 @@
+---
+// Header：左 Logo＋短名；右 中／EN、Join。捲動後收合成玻璃膠囊。
+import { getCopy, getLocale, localePath } from '../i18n/copy';
+
+const locale = getLocale(Astro.currentLocale);
+const copy = getCopy(locale);
+const path = Astro.url.pathname;
+const zhPath = path.replace(/^\/en(?=\/|$)/, '') || '/';
+const enPath = `/en${zhPath === '/' ? '/' : zhPath}`;
+const home = locale === 'en' ? '/en/' : '/';
+const arrow = 'M3 8h10M9 4l4 4-4 4';
+---
+
+<header class="hdr" data-hdr>
+  <div class="hdr__bar">
+    <a href={home} class="hdr__brand" aria-label={`${copy.meta.title} · ${copy.meta.home}`}>
+      <img src="/brand/logo-512.png" alt="" width="34" height="34" class="hdr__logo" decoding="async" />
+      <span class="hdr__name">{copy.meta.shortName}</span>
+    </a>
+
+    <div class="hdr__right">
+      <div class="hdr__lang" data-locale={locale} role="group" aria-label={copy.meta.langLabel}>
+        <span class="hdr__lang-pill" aria-hidden="true"></span>
+        <a href={zhPath} hreflang="zh-Hant-TW" lang="zh-Hant-TW" aria-current={locale === 'zh-tw' ? 'true' : undefined}>中</a>
+        <a href={enPath} hreflang="en" lang="en" aria-current={locale === 'en' ? 'true' : undefined}>EN</a>
+      </div>
+      <a href={localePath(locale, '/join')} class="btn-run btn-run--primary btn-run--sm hdr__join" data-magnetic>
+        <span>{copy.meta.join}</span>
+        <span class="btn-run__icon" aria-hidden="true">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d={arrow} /></svg>
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d={arrow} /></svg>
+        </span>
+      </a>
+    </div>
+  </div>
+</header>
+
+<style>
+  .hdr {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 70;
+    padding: 18px clamp(12px, 1.6vw, 28px) 0;
+    pointer-events: none;
+    transition: padding 0.6s var(--ease-run), opacity 0.6s var(--ease-run), translate 0.6s var(--ease-run);
+  }
+  :global(html.boot-on) .hdr {
+    opacity: 0;
+    translate: 0 -10px;
+  }
+  .hdr__bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    height: 54px;
+    padding: 0 7px 0 10px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    pointer-events: auto;
+    transition:
+      background-color 0.6s var(--ease-run),
+      border-color 0.6s var(--ease-run),
+      box-shadow 0.6s var(--ease-run),
+      backdrop-filter 0.6s;
+  }
+  :global(html.header-condensed) .hdr {
+    padding-top: 10px;
+  }
+  :global(html.header-condensed) .hdr__bar {
+    background: rgb(9 12 46 / 0.6);
+    border-color: rgb(255 255 255 / 0.09);
+    box-shadow: 0 16px 40px -20px rgb(0 0 0 / 0.8);
+    /* backdrop 下面是會動的 WebGL，每幀都要重算模糊；半徑小一點、不加 saturate */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  .hdr__brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 44px;
+    color: var(--color-snow-50);
+    text-decoration: none;
+  }
+  .hdr__logo {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px rgb(255 255 255 / 0.12), 0 0 22px -4px rgb(77 71 254 / 0.8);
+    transition: rotate 0.8s var(--ease-run);
+  }
+  .hdr__brand:hover .hdr__logo {
+    rotate: -12deg;
+  }
+  .hdr__name {
+    font-family: var(--font-display);
+    font-size: 14.5px;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+    white-space: nowrap;
+    overflow: hidden;
+    max-width: 16em;
+    transition: max-width 0.7s var(--ease-run), opacity 0.5s var(--ease-run);
+  }
+  :global(html.header-condensed) .hdr__name {
+    max-width: 0;
+    opacity: 0;
+  }
+
+  .hdr__right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .hdr__lang {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    height: 40px;
+    padding: 3px;
+    border-radius: 999px;
+    background: rgb(255 255 255 / 0.05);
+    border: 1px solid rgb(255 255 255 / 0.1);
+  }
+  .hdr__lang a {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    min-width: 40px;
+    padding: 0 8px;
+    border-radius: 999px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--color-mist-300);
+    text-decoration: none;
+    transition: color 0.4s;
+  }
+  .hdr__lang a:hover {
+    color: var(--color-snow-50);
+  }
+  .hdr__lang a[aria-current] {
+    color: var(--color-night-950);
+  }
+  .hdr__lang-pill {
+    position: absolute;
+    top: 3px;
+    bottom: 3px;
+    left: 3px;
+    width: calc(50% - 3px);
+    border-radius: 999px;
+    background: linear-gradient(100deg, #f6fbfc, #decffe);
+    transition: translate 0.5s var(--ease-run);
+  }
+  .hdr__lang[data-locale='en'] .hdr__lang-pill {
+    translate: 100% 0;
+  }
+
+  @media (max-width: 520px) {
+    .hdr {
+      padding: 10px 10px 0;
+    }
+    .hdr__bar {
+      height: 50px;
+      padding-left: 6px;
+    }
+    .hdr__name {
+      font-size: 13px;
+    }
+    .hdr__lang a {
+      min-width: 34px;
+      padding: 0 4px;
+    }
+  }
+  @media (max-width: 459px) {
+    .hdr__name {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  // 捲動後收合（不依賴引擎，第一時間就生效）
+  const html = document.documentElement;
+  let on = false;
+  const check = () => {
+    const next = window.scrollY > 48;
+    if (next !== on) html.classList.toggle('header-condensed', (on = next));
+  };
+  window.addEventListener('scroll', check, { passive: true });
+  check();
+</script>

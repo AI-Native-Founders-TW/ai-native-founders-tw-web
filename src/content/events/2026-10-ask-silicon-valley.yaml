@@ -1,0 +1,19 @@
+# 活動。每個活動一個檔案；任何人都可以開 PR 新增。
+# link 填 src/config/links.ts 的 key，或完整網址。
+# 只放實際在進行的活動，不把候選做法（例如固定聚會）寫成活動。
+id: ask-silicon-valley
+status: ongoing # ongoing | upcoming | past
+title:
+  zh-tw: 想問矽谷大佬關於創業出海的問題？
+  en: What would you ask Silicon Valley founders about going global?
+summary:
+  zh-tw: 到 Discord 的 events 活動串留下你想問的問題，以及你願意協助的部分；問題會被收集起來，拿去問前輩。
+  en: Drop your question in the Discord events thread, plus anything you'd be up for helping with. We collect the questions and bring them to founders who have done it.
+where:
+  zh-tw: 線上 · Discord events
+  en: Online · Discord events
+region: online
+link: eventThread
+# 出處：mono Threads 引流招募客服 SOP 公版第 5 點（2026-10-26 加入 mono）
+source: specs/02-工作流/[機制]Threads引流招募客服SOP.md
+listedAt: 2026-10-26

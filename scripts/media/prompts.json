@@ -1,0 +1,49 @@
+{
+  "$comment": "Seedance 鏡頭腳本（英文 prompt）。所有鏡頭共用 style 與 negative；每段的 end 描述就是下一段的 start，剪接時可直接接上。修改後先跑 dry-run 看成本。",
+  "version": 1,
+  "palette": ["#0b0f38", "#1e47f3", "#4d47fe", "#19acfe", "#decffe"],
+  "style": "Cinematic, slow and steady camera, photographic depth of field, soft volumetric light, fine floating particle dust, subtle film grain, high dynamic range but restrained highlights. Color palette strictly limited to deep navy #0b0f38, royal blue #1e47f3, iris violet-blue #4d47fe, sky blue #19acfe and pale lavender #decffe; no other hues, no warm orange or red tones. Calm, hopeful, quiet mood. Clean composition with generous negative space for overlaid typography.",
+  "negative": "text, letters, words, numbers, captions, subtitles, signage, logos, watermarks, brand marks, user interface, HUD, maps with labels, flags, people, faces, hands, airplanes, vehicles, recognizable landmarks, lens flare streaks, orange, red, yellow, green, saturated magenta, fast cuts, camera shake, morphing artifacts, flicker",
+  "defaults": {
+    "aspect_ratio": "16:9",
+    "resolution": "1080p",
+    "seed": 20261024
+  },
+  "shots": [
+    {
+      "id": "hero-loop",
+      "use": "Hero 背景循環（AV1＋H.264，前景是即時 shader 光帶）",
+      "duration": 8,
+      "loop": true,
+      "prompt": "Abstract deep-space backdrop. Several translucent ribbons of light flow slowly in a gentle S-shaped wave from lower left to upper right, like silk made of light, glowing royal blue at the core and fading into iris violet and lavender at the edges. Tiny particles drift through the ribbons and catch the light. A single small soft lavender orb hovers at the upper right, breathing very slightly. Locked-off camera with an almost imperceptible slow push-in. The motion is cyclical: the final frame must match the first frame exactly so the clip loops seamlessly.",
+      "start": "Ribbons of light in a soft S-curve across the frame on a deep navy background, lavender orb at upper right.",
+      "end": "Identical to the first frame (seamless loop)."
+    },
+    {
+      "id": "voyage-1-taipei-night",
+      "use": "出海 第 1 段：台北深夜起飛（影格序列 0–33%）",
+      "duration": 10,
+      "prompt": "Night aerial shot high above a wide river basin city surrounded by dark mountains, seen from about 3,000 meters. The city is an abstract field of tiny glowing points in iris and sky blue, no buildings readable. A single bright pale-lavender point of light lifts off from the city center and climbs on a smooth arc toward the east, leaving a thin glowing sky-blue trail. The camera follows from behind and slightly above, rising with it, crossing the dark coastline and heading over the black, softly shimmering ocean. Stars faintly visible above a gently curved horizon.",
+      "start": "Top-down-ish night view of the glowing city basin, light point resting at the city center.",
+      "end": "Looking east from high altitude over the dark open ocean; curved horizon at the lower third; the light point centered ahead with its trail coming from the bottom of the frame; deep navy sky with faint stars."
+    },
+    {
+      "id": "voyage-2-pacific",
+      "use": "出海 第 2 段：橫越太平洋（影格序列 33–66%）",
+      "duration": 10,
+      "start_from": "voyage-1-taipei-night",
+      "prompt": "Continuous with the previous shot. From high altitude, the camera glides forward over a vast calm ocean whose surface is made of countless shimmering particles of royal blue light, like a living star field below. The curvature of the Earth is visible along a soft horizon at the lower third, outlined by a thin luminous atmosphere in royal blue. The single light point flies steadily ahead, its sky-blue trail extending behind it toward the camera. Four times along the way, faint concentric rings of light ripple outward on the ocean surface beneath the light point, evenly spaced in time. Over the course of the shot, a very subtle pale glow begins to appear at the far eastern horizon.",
+      "start": "Looking east from high altitude over the dark open ocean; curved horizon at the lower third; light point centered ahead; deep navy sky with faint stars.",
+      "end": "Same framing, the far horizon now carries a thin band of pale lavender and sky-blue pre-dawn light; stars fading."
+    },
+    {
+      "id": "voyage-3-sf-dawn",
+      "use": "出海 第 3 段：舊金山破曉、抵達（影格序列 66–100%）",
+      "duration": 10,
+      "start_from": "voyage-2-pacific",
+      "prompt": "Continuous with the previous shot. The light point descends gently toward a hilly coastline with a wide bay, rendered abstractly as soft dark silhouettes and scattered glowing points, no recognizable bridges or landmarks. Dawn breaks: the sky transitions from deep navy at the top through royal blue to luminous sky blue and pale lavender near the horizon; the sun's soft disc just touches the horizon ahead, diffused by thin haze. The light point settles into the coastline and blooms once into a soft lavender halo. The camera slows to a near stop for a calm, wide, stable final composition with open sky in the upper two thirds.",
+      "start": "Looking east over the ocean at pre-dawn; thin lavender band on the horizon; light point ahead.",
+      "end": "Calm wide dawn shot: sky blue and lavender sky, sun on the horizon, coastline silhouette at the lower third, the light point resting as a soft halo. Camera still (good for holding the last frame)."
+    }
+  ]
+}

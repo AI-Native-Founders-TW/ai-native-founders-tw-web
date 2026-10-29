@@ -1,0 +1,216 @@
+---
+import { links } from '../config/links';
+import { phrases } from '../experience/engine/phrase';
+import { type Copy, getLocale, localePath } from '../i18n/copy';
+
+interface Props {
+  copy: Copy;
+}
+const { copy } = Astro.props;
+const locale = getLocale(Astro.currentLocale);
+const ft = copy.footer;
+const ext = 'M5 11 11 5M6 5h5v5';
+type FooterLink = { label: string; href: string; ext?: boolean };
+const cols: { title: string; items: FooterLink[] }[] = [
+  {
+    title: ft.explore,
+    items: [
+      { label: copy.meta.join, href: localePath(locale, '/join') },
+      { label: 'Credits', href: localePath(locale, '/credits') },
+      { label: 'llms.txt', href: '/llms.txt' },
+    ],
+  },
+  {
+    title: ft.community,
+    items: [
+      { label: 'Discord', href: links.discord, ext: true },
+      { label: 'GitHub · mono', href: links.mono, ext: true },
+      { label: ft.openSource, href: links.webRepo, ext: true },
+    ],
+  },
+];
+---
+
+<footer class="ft">
+  <div class="container-run">
+    <div class="ft__top">
+      <div class="ft__brand">
+        <img src="/brand/logo-512.png" alt="" width="56" height="56" loading="lazy" decoding="async" />
+        <p class="ft__name">AI-Native Global Founders Speedrun Taiwan</p>
+        <p class="ft__tag">{phrases(ft.tagline).map((w) => (w.trim() ? <span class="phrase">{w}</span> : w))}</p>
+      </div>
+      <nav class="ft__cols" aria-label="Footer">
+        {cols.map((c) => (
+          <div>
+            <p class="ft__col-title">{c.title}</p>
+            <ul>
+              {c.items.map((it) => (
+                <li>
+                  <a href={it.href} {...(it.ext ? { target: '_blank', rel: 'noopener' } : {})}>
+                    {it.label}
+                    {it.ext && (
+                      <>
+                        <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d={ext} /></svg>
+                        <span class="sr-only">{copy.meta.newTab}</span>
+                      </>
+                    )}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </nav>
+    </div>
+
+    <div class="ft__bottom">
+      <p>{ft.nonprofit} · {ft.logoCredit} · {ft.aiCredit}</p>
+      <a href="#top" class="ft__top-link" data-to-top>
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 13V3M4 7l4-4 4 4" /></svg>
+        {ft.backToStart}
+      </a>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .ft {
+    position: relative;
+    padding: 88px 0 calc(32px + env(safe-area-inset-bottom));
+    border-top: 1px solid rgb(255 255 255 / 0.08);
+    background: linear-gradient(180deg, rgb(11 15 56 / 0.4), rgb(7 10 38 / 0.95));
+    color: var(--color-mist-300);
+  }
+  .ft::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -1px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #4d47fe 30%, #19acfe 60%, transparent);
+    opacity: 0.6;
+  }
+  .ft__top {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    gap: 48px;
+  }
+  .ft__brand img {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    box-shadow: 0 0 40px -6px rgb(77 71 254 / 0.8);
+  }
+  .ft__name {
+    margin: 22px 0 0;
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--color-snow-50);
+  }
+  .ft__tag {
+    margin: 10px 0 0;
+    max-width: 14em;
+    font-family: 'Noto Sans TC', var(--font-display);
+    font-size: clamp(1.6rem, 2.8vw, 2.5rem);
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.03em;
+    background: var(--gradient-text);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-wrap: balance;
+  }
+  .ft__cols {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 32px;
+  }
+  .ft__col-title {
+    margin: 0 0 14px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-mist-500);
+  }
+  .ft__cols ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 4px;
+  }
+  .ft__cols a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 36px;
+    font-size: 15px;
+    color: var(--color-mist-300);
+    text-decoration: none;
+    transition: color 0.3s;
+  }
+  .ft__cols a:hover {
+    color: var(--color-snow-50);
+  }
+  .ft__bottom {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 72px;
+    padding-top: 22px;
+    border-top: 1px solid rgb(255 255 255 / 0.07);
+    font-size: 12.5px;
+    color: var(--color-mist-500);
+  }
+  .ft__bottom p {
+    margin: 0;
+  }
+  .ft__top-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 0 16px;
+    border-radius: 999px;
+    border: 1px solid rgb(255 255 255 / 0.14);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-snow-50);
+    text-decoration: none;
+    transition: border-color 0.3s, background-color 0.3s;
+  }
+  .ft__top-link:hover {
+    border-color: rgb(222 207 254 / 0.6);
+    background: rgb(222 207 254 / 0.08);
+  }
+  @media (max-width: 767px) {
+    .ft {
+      padding-top: 64px;
+      padding-bottom: calc(84px + env(safe-area-inset-bottom));
+    }
+    .ft__top {
+      grid-template-columns: 1fr;
+      gap: 40px;
+    }
+    .ft__bottom {
+      margin-top: 48px;
+    }
+  }
+</style>
+
+<script>
+  import { scrollToTarget } from '../experience/engine';
+  document.querySelector('[data-to-top]')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    scrollToTarget(0);
+    (document.querySelector('header a') as HTMLElement | null)?.focus({ preventScroll: true });
+  });
+</script>

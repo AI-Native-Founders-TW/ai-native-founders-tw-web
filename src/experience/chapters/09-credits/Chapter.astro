@@ -1,0 +1,553 @@
+---
+import { type CreditGroup, getCreditGroups } from '../../../graph';
+// 章節 09：Credits Roll。遊戲破關後的工作人員名單：捲動控制名單上滾（pin＋scrub），停下來時自己慢慢播。
+import type { Copy } from '../../../i18n/copy';
+import Person from './Person.astro';
+
+interface Props {
+  copy: Copy;
+}
+const { copy } = Astro.props;
+const cr = copy.credits;
+
+let groups: CreditGroup[] = (await getCreditGroups()).filter((g) => g.people.length > 0);
+
+// 開發用：CREDITS_STRESS=120 pnpm dev 產生假名單，檢查上百人時的版面（只在 dev 生效）
+if (import.meta.env.DEV) {
+  const n = Number(process.env.CREDITS_STRESS ?? 0);
+  if (n > 0) {
+    const names = [
+      'Alex',
+      '小安',
+      'Jamie',
+      '品妤',
+      'Chris',
+      '阿哲',
+      'Morgan',
+      '宜蓁',
+      'Taylor',
+      '冠廷',
+      'Robin',
+      '思妤',
+    ];
+    const labels = ['自介', '文件', '程式', '設計', '文案', '資訊貢獻'];
+    const fake = Array.from({ length: n }, (_, i) => ({
+      person: { id: `fake:${i}`, name: `${names[i % names.length]} ${i + 1}`, hasIntro: true },
+      labels: [labels[i % labels.length]],
+    }));
+    groups = [
+      ...groups,
+      { key: 'org', title: 'org', people: fake.slice(0, Math.min(18, n)) },
+      { key: 'community', title: 'community', people: fake },
+    ];
+  }
+}
+
+const WALL = 14;
+// 電影片尾的排法：同一個角色的人排在一起，角色只寫一次
+function cluster(people: CreditGroup['people']) {
+  const out: { role: string; people: CreditGroup['people'][number]['person'][] }[] = [];
+  for (const { person, labels } of people) {
+    const role = labels.join(' · ');
+    const hit = out.find((c) => c.role === role);
+    if (hit) hit.people.push(person);
+    else out.push({ role, people: [person] });
+  }
+  return out;
+}
+---
+
+<section
+  id="ch-09"
+  data-split="09"
+  data-split-name={copy.hud.splits['09']}
+  class="ch09 relative"
+  aria-labelledby="ch09-title"
+>
+  <div class="cr-stage" data-cr-stage>
+    <div class="cr-viewport">
+      <div class="cr-roll" data-cr-roll>
+        <header class="cr-head">
+          <p class="cr-kicker">{cr.kicker}</p>
+          <h2 id="ch09-title" class="cr-title">{cr.title}</h2>
+          <p class="cr-sub">{cr.subtitle}</p>
+        </header>
+
+        {
+          groups.map((g) => {
+            const wall = g.people.length > WALL;
+            return (
+              <section class:list={['cr-group', wall ? 'cr-wall' : 'cr-film']} aria-labelledby={`cr-g-${g.key}`}>
+                <h3 id={`cr-g-${g.key}`} class="cr-group-title">
+                  <span class="cr-group-line" aria-hidden="true" />
+                  <span>{cr.sections?.[g.key] ?? g.title}</span>
+                  <span class="cr-group-count" aria-hidden="true">{String(g.people.length).padStart(2, '0')}</span>
+                  <span class="cr-group-line" aria-hidden="true" />
+                </h3>
+                {wall ? (
+                  <ol class="cr-list">
+                    {g.people.map(({ person, labels }) => (
+                      <li class="cr-entry">
+                        <span class="cr-role">{labels.join(' · ')}</span>
+                        <Person person={person} />
+                      </li>
+                    ))}
+                  </ol>
+                ) : (
+                  <ol class="cr-list">
+                    {cluster(g.people).map(({ role, people }) => (
+                      <li class="cr-entry">
+                        <span class="cr-role">{role}</span>
+                        <ul class="cr-names">
+                          {people.map((p) => (
+                            <li>
+                              <Person person={p} />
+                            </li>
+                          ))}
+                        </ul>
+                      </li>
+                    ))}
+                  </ol>
+                )}
+              </section>
+            );
+          })
+        }
+
+        <a class="cr-next" href="#ch-08">
+          <span class="cr-av is-next" aria-hidden="true">+</span>
+          <span>{cr.next}</span>
+        </a>
+
+        <div class="cr-end" data-cr-end>
+          <span class="cr-end-dot" aria-hidden="true"></span>
+          <p class="cr-thanks">{cr.thanks}</p>
+          <button type="button" class="cr-replay" data-cr-replay>
+            <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"
+              ><path
+                d="M4 10a6 6 0 1 0 2-4.47M4 3.5v3.2h3.2"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.7"
+                stroke-linecap="round"
+                stroke-linejoin="round"></path></svg
+            >
+            {cr.replay}
+          </button>
+        </div>
+      </div>
+    </div>
+    <button type="button" class="cr-pause" data-cr-pause data-pause={cr.pause} data-play={cr.play} aria-pressed="false" hidden>
+      <span class="cr-pause-icon" aria-hidden="true"></span>
+      <span data-cr-pause-label>{cr.pause}</span>
+    </button>
+  </div>
+</section>
+
+<script>
+  import { initCredits } from './scene';
+  initCredits();
+</script>
+
+<style is:global>
+  .ch09 {
+    --cr-axis: 1.75rem;
+    background:
+      radial-gradient(60% 40% at 50% 100%, rgb(56 12 116 / 0.35), transparent 70%),
+      var(--color-night-950);
+  }
+  .cr-stage {
+    position: relative;
+  }
+  .cr-roll {
+    padding: clamp(8rem, 20vh, 12rem) 1.25rem clamp(6rem, 14vh, 10rem);
+  }
+
+  /* ---------- 捲動模式（有 JS、未減少動態） ---------- */
+  .ch09.is-rolling .cr-stage {
+    height: 100dvh;
+    overflow: hidden;
+  }
+  .ch09.is-rolling .cr-viewport {
+    position: absolute;
+    inset: 0;
+    -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 16%, #000 84%, transparent 100%);
+    mask-image: linear-gradient(180deg, transparent 0, #000 16%, #000 84%, transparent 100%);
+  }
+  .ch09.is-rolling .cr-roll {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    padding-top: 30dvh;
+    will-change: transform;
+  }
+
+  /* ---------- 片頭 ---------- */
+  .cr-head {
+    text-align: center;
+    margin-bottom: clamp(7rem, 20vh, 12rem);
+  }
+  .cr-kicker {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--color-mist-300);
+  }
+  .cr-title {
+    margin-top: 1.25rem;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(4.5rem, 13vw, 12rem);
+    line-height: 0.9;
+    letter-spacing: -0.055em;
+    background: var(--gradient-text);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    padding-bottom: 0.06em;
+  }
+  .cr-sub {
+    margin-top: 1.5rem;
+    font-size: clamp(1.05rem, 1.5vw, 1.3rem);
+    color: var(--color-mist-300);
+  }
+
+  /* ---------- 分組 ---------- */
+  .cr-group {
+    width: min(100%, 64rem);
+    margin-inline: auto;
+  }
+  .cr-group + .cr-group {
+    margin-top: clamp(7rem, 18vh, 11rem);
+  }
+  .cr-group-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: clamp(3rem, 7vh, 4.5rem);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--color-lavender-300);
+  }
+  .cr-group-count {
+    color: var(--color-mist-500);
+    font-weight: 400;
+    letter-spacing: 0.1em;
+  }
+  .cr-group-line {
+    width: clamp(2rem, 8vw, 6rem);
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgb(206 171 253 / 0.6));
+  }
+  .cr-group-line:last-child {
+    transform: scaleX(-1);
+  }
+
+  /* 電影片尾式：角色在左（靠右對齊）、名字在右 */
+  .cr-film .cr-list {
+    display: grid;
+    gap: clamp(1.6rem, 3.5vh, 2.4rem);
+  }
+  .cr-film .cr-entry {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: calc(var(--cr-axis) * 2);
+    align-items: start;
+  }
+  .cr-film .cr-role {
+    padding-top: calc(clamp(2.75rem, 4vw, 3.5rem) / 2 - 0.6em);
+  }
+  .cr-names {
+    display: grid;
+    gap: 1.1rem;
+  }
+  .cr-film .cr-role {
+    text-align: right;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-mist-300);
+  }
+  .cr-film .cr-person {
+    display: inline-flex;
+    width: fit-content;
+    align-items: center;
+    gap: 1rem;
+    justify-self: start;
+  }
+  .cr-film .cr-name {
+    font-family: var(--font-display), 'Noto Sans TC', sans-serif;
+    font-weight: 600;
+    font-size: clamp(1.9rem, 3.4vw, 3rem);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+  .cr-film .cr-av {
+    --s: clamp(2.75rem, 4vw, 3.5rem);
+  }
+
+  /* 名單牆：人多時（上百人）改成多欄 */
+  .cr-wall .cr-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(13.5rem, 1fr));
+    gap: 1.4rem 1.75rem;
+  }
+  .cr-wall .cr-entry {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 0.2rem;
+  }
+  .cr-wall .cr-person {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .cr-wall .cr-name {
+    font-weight: 600;
+    font-size: 1.15rem;
+  }
+  .cr-wall .cr-role {
+    padding-left: calc(2.5rem + 0.75rem);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-mist-500);
+    margin-top: -0.35rem;
+  }
+  .cr-wall .cr-av {
+    --s: 2.5rem;
+    font-size: 0.95rem;
+  }
+
+  .cr-person {
+    color: var(--color-snow-50);
+    text-decoration: none;
+    border-radius: 999px;
+  }
+  a.cr-person:hover .cr-name {
+    background: var(--gradient-text);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* 頭像與字母徽章：品牌漸層外環＋右上角的光點 */
+  .cr-av {
+    --s: 3rem;
+    position: relative;
+    flex: none;
+    width: var(--s);
+    height: var(--s);
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: var(--color-night-800);
+    box-shadow: 0 0 0 1.5px rgb(222 207 254 / 0.45);
+  }
+  .cr-av img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  .cr-av.is-initial {
+    background:
+      radial-gradient(circle at 30% 25%, rgb(255 255 255 / 0.18), transparent 55%),
+      linear-gradient(var(--a, 135deg), #380c74 0%, #1e47f3 55%, #19acfe 100%);
+    box-shadow:
+      inset 0 0 0 1px rgb(246 251 252 / 0.25),
+      0 8px 24px -10px rgb(30 71 243 / 0.9);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: calc(var(--s) * 0.4);
+    color: var(--color-snow-50);
+  }
+  .cr-av::after {
+    content: '';
+    position: absolute;
+    top: 2%;
+    right: 2%;
+    width: 22%;
+    height: 22%;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #f6fbfc, #decffe 60%, #9d93f6);
+    box-shadow: 0 0 8px rgb(222 207 254 / 0.8);
+  }
+  .cr-av.is-next {
+    background: none;
+    box-shadow: none;
+    border: 1.5px dashed rgb(206 171 253 / 0.6);
+    color: var(--color-lavender-300);
+    font-size: 1.25rem;
+  }
+  .cr-av.is-next::after {
+    display: none;
+  }
+
+  .cr-next {
+    display: flex;
+    width: fit-content;
+    align-items: center;
+    gap: 0.9rem;
+    margin: clamp(5rem, 12vh, 8rem) auto 0;
+    padding: 0.5rem 1.2rem 0.5rem 0.5rem;
+    border-radius: 999px;
+    color: var(--color-lavender-100);
+    text-decoration: none;
+    font-size: 1.05rem;
+    transition: background 0.3s;
+  }
+  .cr-next:hover {
+    background: rgb(77 71 254 / 0.15);
+  }
+
+  /* ---------- 片尾 ---------- */
+  .cr-end {
+    display: grid;
+    justify-items: center;
+    gap: 2.25rem;
+    margin-top: clamp(10rem, 32vh, 18rem);
+    text-align: center;
+  }
+  .cr-end-dot {
+    width: 0.9rem;
+    height: 0.9rem;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #f6fbfc, #decffe 55%, #9d93f6);
+    box-shadow:
+      0 0 16px rgb(222 207 254 / 0.9),
+      0 0 60px rgb(77 71 254 / 0.7);
+  }
+  .cr-thanks {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(2.6rem, 7vw, 6.5rem);
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+  .cr-replay {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.95rem 1.6rem;
+    border-radius: 999px;
+    border: 0;
+    font: inherit;
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--color-snow-50);
+    background: var(--gradient-brand);
+    box-shadow:
+      0 0 0 1px rgb(246 251 252 / 0.15) inset,
+      0 20px 50px -20px rgb(30 71 243 / 0.9);
+    cursor: pointer;
+    transition:
+      transform 0.4s var(--ease-run),
+      box-shadow 0.4s;
+  }
+  .cr-replay:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 0 0 1px rgb(246 251 252 / 0.3) inset,
+      0 26px 60px -20px rgb(25 172 254 / 0.9);
+  }
+  .cr-replay:hover svg {
+    transform: rotate(-200deg);
+  }
+  .cr-replay svg {
+    transition: transform 0.7s var(--ease-run);
+  }
+
+  /* ---------- 暫停鍵 ---------- */
+  .cr-pause {
+    position: absolute;
+    right: clamp(1rem, 3vw, 2.5rem);
+    bottom: clamp(1rem, 4vh, 2.25rem);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.55rem 0.95rem;
+    border: 0;
+    border-radius: 999px;
+    font: inherit;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    color: var(--color-mist-300);
+    background: rgb(11 15 56 / 0.7);
+    box-shadow: inset 0 0 0 1px rgb(184 192 224 / 0.2);
+    backdrop-filter: blur(8px);
+    cursor: pointer;
+    z-index: 2;
+  }
+  .cr-pause {
+    transition:
+      opacity 0.4s,
+      visibility 0.4s;
+  }
+  .cr-pause.is-done {
+    opacity: 0;
+    visibility: hidden;
+  }
+  .cr-pause:hover {
+    color: var(--color-snow-50);
+  }
+  .cr-pause-icon {
+    width: 0.6rem;
+    height: 0.7rem;
+    border-inline: 2.5px solid currentColor;
+  }
+  .cr-pause[aria-pressed='true'] .cr-pause-icon {
+    border: 0;
+    width: 0;
+    height: 0;
+    border-left: 0.6rem solid currentColor;
+    border-top: 0.36rem solid transparent;
+    border-bottom: 0.36rem solid transparent;
+  }
+
+  @media (max-width: 767px) {
+    /* 手機的 HUD 在底部，暫停鍵往上讓開 */
+    .cr-pause {
+      bottom: calc(6.25rem + env(safe-area-inset-bottom));
+      right: 1rem;
+    }
+    .cr-film .cr-entry {
+      grid-template-columns: 1fr;
+      justify-items: center;
+      row-gap: 0.6rem;
+      text-align: center;
+    }
+    .cr-film .cr-role {
+      text-align: center;
+      font-size: 0.7rem;
+    }
+    .cr-film .cr-person {
+      justify-self: center;
+    }
+    .cr-film .cr-name {
+      font-size: 1.85rem;
+    }
+    .cr-wall .cr-list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1.1rem 1rem;
+    }
+    .cr-wall .cr-name {
+      font-size: 0.98rem;
+    }
+    .cr-wall .cr-av {
+      --s: 2rem;
+    }
+    .cr-wall .cr-role {
+      padding-left: calc(2rem + 0.75rem);
+    }
+  }
+</style>

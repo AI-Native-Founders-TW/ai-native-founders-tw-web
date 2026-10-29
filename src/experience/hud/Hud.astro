@@ -1,0 +1,550 @@
+---
+// Speedrun HUD：整站的招牌。開場結束後開跑；每個 [data-split] 章節是一個 split。
+// 桌機：右上的 LiveSplit 式面板（滑過／聚焦展開完整 splits）。手機：底部的精簡膠囊。
+// 事件：anf:run-start 開跑、anf:finish 停表（顯示 RUN STARTED）、anf:replay 重置。
+import type { Copy } from '../../i18n/copy';
+
+interface Props {
+  copy: Copy;
+}
+const { copy } = Astro.props;
+const splits = Object.entries(copy.hud.splits as Record<string, string>).filter(
+  ([id]) => id !== '00',
+);
+---
+
+<aside id="hud" class="hud" data-state="idle" aria-label={copy.hud.aria}>
+  <div class="hud__panel">
+    <div class="hud__top" aria-hidden="true">
+      <span class="hud__rec"></span>
+      <span class="hud__label">{copy.hud.label}</span>
+      <span class="hud__cat">{copy.hud.category}</span>
+      <span class="hud__stamp">{copy.finish.timerStop}</span>
+    </div>
+
+    <div class="hud__time" aria-hidden="true">
+      <span class="hud__mmss">00:00</span><span class="hud__ms">.000</span>
+    </div>
+
+    <div class="hud__now" aria-hidden="true">
+      <span class="hud__now-id">00</span>
+      <span class="hud__now-name">{copy.hud.ready}</span>
+      <span class="hud__now-seg"></span>
+    </div>
+
+    <ol class="hud__pips" aria-hidden="true">
+      {splits.map(([id]) => <li data-id={id}></li>)}
+    </ol>
+
+    <div class="hud__drawer" aria-hidden="true">
+      <ol class="hud__splits">
+        {splits.map(([id, name]) => (
+          <li data-id={id}>
+            <span class="i">{id}</span>
+            <span class="n">{name}</span>
+            <span class="d"></span>
+            <span class="t">—</span>
+          </li>
+        ))}
+      </ol>
+    </div>
+
+    <div class="hud__actions">
+      <button type="button" class="hud__skip" data-skip>
+        <span class="hud__skip-label" data-label-skip={copy.hud.skip} data-label-resume={copy.hud.resume}>{copy.hud.skip}</span>
+        <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M3 3.5v9l6-4.5-6-4.5Zm6 0v9l6-4.5-6-4.5Z" fill="currentColor" /></svg>
+      </button>
+    </div>
+  </div>
+  <p class="sr-only" aria-live="polite" data-live></p>
+</aside>
+
+<style>
+  .hud {
+    position: fixed;
+    z-index: 60;
+    right: clamp(12px, 1.6vw, 28px);
+    top: 84px;
+    width: 236px;
+    font-family: var(--font-mono);
+    color: var(--color-mist-300);
+    transition: translate 0.6s var(--ease-run), opacity 0.6s var(--ease-run);
+  }
+  :global(html.boot-on) .hud {
+    opacity: 0;
+    translate: 0 -8px;
+  }
+  :global(html.header-condensed) .hud {
+    translate: 0 -12px;
+  }
+
+  .hud__panel {
+    position: relative;
+    padding: 12px 14px 10px;
+    border-radius: 14px;
+    background:
+      linear-gradient(180deg, rgb(255 255 255 / 0.06), rgb(255 255 255 / 0.015)),
+      rgb(9 12 46 / 0.62);
+    border: 1px solid rgb(255 255 255 / 0.09);
+    box-shadow:
+      0 1px 0 rgb(255 255 255 / 0.06) inset,
+      0 18px 40px -18px rgb(0 0 0 / 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    overflow: hidden;
+  }
+  /* 停表時的光 */
+  .hud__panel::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(120deg, #decffe, #4d47fe 40%, #19acfe);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.8s var(--ease-run);
+    pointer-events: none;
+  }
+  .hud[data-state='finished'] .hud__panel::after {
+    opacity: 1;
+  }
+
+  .hud__top {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  .hud__rec {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--color-mist-500);
+  }
+  .hud[data-state='running'] .hud__rec {
+    background: var(--color-sky-400);
+    box-shadow: 0 0 8px var(--color-sky-400);
+    animation: rec 1.2s steps(2, jump-none) infinite;
+  }
+  .hud[data-state='finished'] .hud__rec {
+    background: var(--color-lavender-100);
+    box-shadow: 0 0 10px var(--color-lavender-100);
+  }
+  @keyframes rec {
+    50% { opacity: 0.25; }
+  }
+  .hud__label {
+    color: var(--color-snow-50);
+    font-weight: 600;
+  }
+  .hud__cat {
+    margin-left: auto;
+    color: var(--color-mist-500);
+    letter-spacing: 0.06em;
+  }
+
+  .hud__time {
+    position: relative;
+    display: flex;
+    align-items: baseline;
+    margin-top: 6px;
+    color: var(--color-snow-50);
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum', 'zero';
+    line-height: 1;
+  }
+  .hud__mmss {
+    font-size: 30px;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+  }
+  .hud__ms {
+    font-size: 17px;
+    font-weight: 400;
+    color: var(--color-mist-300);
+    letter-spacing: -0.02em;
+  }
+  .hud[data-state='idle'] .hud__time {
+    color: var(--color-mist-500);
+  }
+  .hud[data-state='finished'] :is(.hud__mmss, .hud__ms) {
+    background: var(--gradient-text);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .hud__stamp {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    translate: 0 -50%;
+    padding: 3px 6px;
+    white-space: nowrap;
+    border-radius: 4px;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    color: var(--color-night-950);
+    background: linear-gradient(100deg, #f6fbfc, #decffe 50%, #8fd8ff);
+    opacity: 0;
+    scale: 0.6;
+    transition: opacity 0.4s var(--ease-run), scale 0.6s cubic-bezier(0.34, 1.7, 0.5, 1);
+  }
+  .hud[data-state='finished'] .hud__stamp {
+    opacity: 1;
+    scale: 1;
+  }
+  .hud__top {
+    position: relative;
+  }
+  .hud__cat {
+    transition: opacity 0.3s;
+  }
+  .hud[data-state='finished'] .hud__cat {
+    opacity: 0;
+  }
+
+  .hud__now {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-top: 9px;
+    font-size: 11px;
+  }
+  .hud__now-id {
+    color: var(--color-sky-400);
+  }
+  .hud__now-name {
+    font-family: var(--font-sans);
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--color-snow-50);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .hud__now-seg {
+    margin-left: auto;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-mist-500);
+  }
+
+  .hud__pips {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    gap: 3px;
+    margin: 9px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .hud__pips li {
+    height: 3px;
+    border-radius: 2px;
+    background: rgb(255 255 255 / 0.1);
+    transition: background 0.5s var(--ease-run), box-shadow 0.5s;
+  }
+  .hud__pips li[data-s='done'] {
+    background: linear-gradient(90deg, #4d47fe, #19acfe);
+  }
+  .hud__pips li[data-s='now'] {
+    background: var(--color-lavender-100);
+    box-shadow: 0 0 8px rgb(222 207 254 / 0.8);
+  }
+
+  /* LiveSplit 式的完整清單：滑過或聚焦時展開 */
+  .hud__drawer {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.5s var(--ease-run);
+  }
+  .hud:is(:hover, :focus-within) .hud__drawer,
+  .hud[data-open] .hud__drawer {
+    grid-template-rows: 1fr;
+  }
+  .hud__splits {
+    min-height: 0;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .hud__splits li {
+    display: grid;
+    grid-template-columns: 20px 1fr auto 58px;
+    align-items: baseline;
+    gap: 6px;
+    padding: 5px 6px;
+    margin: 0 -6px;
+    border-radius: 6px;
+    font-size: 10.5px;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-mist-500);
+  }
+  .hud__splits li:first-child {
+    margin-top: 10px;
+  }
+  .hud__splits .n {
+    font-family: var(--font-sans);
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .hud__splits .d {
+    color: var(--color-sky-400);
+    font-size: 10px;
+  }
+  .hud__splits .t {
+    text-align: right;
+  }
+  .hud__splits li[data-s='done'] {
+    color: var(--color-mist-300);
+  }
+  .hud__splits li[data-s='done'] .t {
+    color: var(--color-snow-50);
+  }
+  .hud__splits li[data-s='now'] {
+    color: var(--color-snow-50);
+    background: linear-gradient(90deg, rgb(77 71 254 / 0.35), rgb(77 71 254 / 0.05));
+  }
+  .hud__splits li[data-s='now'] .i {
+    color: var(--color-lavender-100);
+  }
+
+  .hud__actions {
+    display: flex;
+    margin-top: 10px;
+    padding-top: 9px;
+    border-top: 1px solid rgb(255 255 255 / 0.07);
+  }
+  .hud__skip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin-left: auto;
+    padding: 6px 10px;
+    margin-right: -6px;
+    margin-bottom: -2px;
+    border-radius: 999px;
+    font: 600 10.5px/1 var(--font-mono);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-snow-50);
+    background: rgb(255 255 255 / 0.06);
+    border: 1px solid rgb(255 255 255 / 0.12);
+    cursor: pointer;
+    transition: background 0.3s, border-color 0.3s, color 0.3s;
+  }
+  .hud__skip:hover {
+    background: rgb(222 207 254 / 0.16);
+    border-color: rgb(222 207 254 / 0.5);
+  }
+  .hud__skip svg {
+    transition: translate 0.4s var(--ease-run);
+  }
+  .hud__skip:hover svg {
+    translate: 3px 0;
+  }
+
+  /* ── 桌機：離開 Hero 後，HUD 收進 Header 那一列（不佔內容區） ───────── */
+  @media (min-width: 768px) {
+    .hud {
+      transition:
+        top 0.7s var(--ease-run),
+        right 0.7s var(--ease-run),
+        width 0.7s var(--ease-run),
+        translate 0.6s var(--ease-run),
+        opacity 0.6s var(--ease-run);
+    }
+    :global(html.header-condensed) .hud {
+      z-index: 75;
+      top: 11px;
+      /* Header 右側：語言切換＋Join 的寬度 */
+      right: calc(clamp(12px, 1.6vw, 28px) + 216px);
+      width: auto;
+      translate: none;
+    }
+    :global(html.header-condensed) .hud__panel {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      height: 52px;
+      padding: 0 6px 0 16px;
+      border-radius: 999px;
+      overflow: visible;
+      background: rgb(9 12 46 / 0.4);
+      box-shadow: none;
+    }
+    :global(html.header-condensed) :is(.hud__label, .hud__cat, .hud__pips, .hud__now-seg) {
+      display: none;
+    }
+    :global(html.header-condensed) .hud__top {
+      position: static;
+    }
+    :global(html.header-condensed) .hud__time {
+      margin: 0;
+    }
+    :global(html.header-condensed) .hud__mmss {
+      font-size: 19px;
+      letter-spacing: -0.02em;
+    }
+    :global(html.header-condensed) .hud__ms {
+      font-size: 12.5px;
+    }
+    :global(html.header-condensed) .hud__now {
+      margin: 0;
+      padding-left: 12px;
+      border-left: 1px solid rgb(255 255 255 / 0.12);
+      max-width: 9.5em;
+    }
+    :global(html.header-condensed) .hud__actions {
+      margin: 0;
+      padding: 0;
+      border: 0;
+    }
+    :global(html.header-condensed) .hud__skip {
+      margin: 0;
+      min-height: 38px;
+      white-space: nowrap;
+    }
+    :global(html.header-condensed) .hud__stamp {
+      position: static;
+      translate: none;
+      display: none;
+    }
+    :global(html.header-condensed) .hud[data-state='finished'] .hud__stamp {
+      display: inline-block;
+    }
+    :global(html.header-condensed) .hud[data-state='finished'] .hud__now {
+      display: none;
+    }
+    /* 完整 splits 在收合時改成下拉 */
+    :global(html.header-condensed) .hud__drawer {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      width: 260px;
+      padding: 0 14px;
+      border-radius: 14px;
+      background: rgb(9 12 46 / 0.86);
+      border: 1px solid rgb(255 255 255 / 0.09);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      opacity: 0;
+      visibility: hidden;
+      transition: grid-template-rows 0.5s var(--ease-run), opacity 0.3s, visibility 0s 0.5s;
+    }
+    :global(html.header-condensed) .hud:is(:hover, :focus-within) .hud__drawer {
+      opacity: 1;
+      visibility: visible;
+      padding-bottom: 10px;
+      transition: grid-template-rows 0.5s var(--ease-run), opacity 0.3s;
+    }
+  }
+
+  /* 安靜段（章節 07）：退到背景 */
+  .hud[data-quiet] {
+    opacity: 0.35;
+  }
+  .hud[data-quiet] .hud__rec {
+    animation-play-state: paused;
+  }
+  .hud[data-quiet]:is(:hover, :focus-within) {
+    opacity: 1;
+  }
+
+  /* ── 手機：底部膠囊 ─────────────────────────── */
+  @media (max-width: 767px) {
+    .hud {
+      top: auto;
+      right: auto;
+      left: 50%;
+      bottom: calc(12px + env(safe-area-inset-bottom));
+      width: auto;
+      translate: -50% 0;
+    }
+    :global(html.boot-on) .hud {
+      translate: -50% 12px;
+    }
+    :global(html.header-condensed) .hud {
+      translate: -50% 0;
+    }
+    .hud__panel {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      height: 44px;
+      padding: 0 4px 0 14px;
+      border-radius: 999px;
+    }
+    .hud__top .hud__label,
+    .hud__top .hud__cat,
+    .hud__pips,
+    .hud__drawer,
+    .hud__now-seg,
+    .hud__now-id {
+      display: none;
+    }
+    .hud__top {
+      position: static;
+    }
+    .hud__stamp {
+      display: none;
+    }
+    .hud[data-state='finished'] .hud__now {
+      display: none;
+    }
+    .hud[data-state='finished'] .hud__stamp {
+      display: inline-block;
+      position: static;
+      translate: none;
+      order: 3;
+      margin-left: 2px;
+    }
+    .hud__top {
+      gap: 0;
+    }
+    .hud__time {
+      margin: 0;
+    }
+    .hud__mmss {
+      font-size: 17px;
+      letter-spacing: -0.02em;
+    }
+    .hud__ms {
+      font-size: 12px;
+    }
+    .hud__now {
+      margin: 0;
+      padding-left: 10px;
+      border-left: 1px solid rgb(255 255 255 / 0.12);
+      max-width: 34vw;
+    }
+    .hud__actions {
+      margin: 0;
+      padding: 0;
+      border: 0;
+    }
+    .hud__skip {
+      margin: 0;
+      min-height: 36px;
+      padding: 0 12px;
+      white-space: nowrap;
+      letter-spacing: 0.04em;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hud[data-state='running'] .hud__rec { animation: none; }
+  }
+</style>
+
+<script>
+  import { initHud } from './index';
+  initHud();
+</script>

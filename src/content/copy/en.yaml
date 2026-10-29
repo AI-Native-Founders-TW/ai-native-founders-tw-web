@@ -1,0 +1,245 @@
+# Homepage copy (English). Same key structure as zh-tw.yaml; any missing key falls back to Chinese.
+# Audience: Silicon Valley founders and investors, and international founders. Write like a person, not a translation.
+# Rules: nothing from unadopted "Note" ideas as if it were a service; no background or track-record requirements (constitution art. 11).
+
+meta:
+  title: AI-Native Global Founders Speedrun Taiwan
+  description: One set of notes to level up every founder in Taiwan. A non-profit, open-source community collecting hard-won founder experience and turning it into open notes.
+  skip: Skip the run — take me to join
+  # Header
+  shortName: AI-Native Founders TW
+  home: Back to home
+  join: Join
+  langLabel: Switch language
+  newTab: (opens in a new tab)
+
+hud:
+  label: RUN
+  aria: Speedrun timer
+  category: Any% · TPE → World
+  ready: READY
+  skip: Skip the run
+  resume: Resume motion
+  splits:
+    "00": Start
+    "01": Spawn
+    "02": Once is enough
+    "03": Going global
+    "04": Builds
+    "05": Your class
+    "06": AI-Native
+    "07": What we don't do
+    "08": Finish line
+    "09": Credits
+
+boot:
+  line: Loading your run…
+  press: Scroll to start
+
+hero:
+  eyebrow: AI-Native Global Founders Speedrun Taiwan
+  title: One set of notes. Every founder in Taiwan, levelled up.
+  # Line breaks (joined, they must equal title); on desktop the last two share a line
+  titleLines:
+    - "One set of notes. "
+    - "Every founder in Taiwan, "
+    - levelled up.
+  subtitle: We collect what founders who've done it already know and turn it into open notes anyone can use — so nobody has to reinvent the wheel, build a network from zero, or figure it all out alone.
+  ctaPrimary: Submit your intro, join the run
+  ctaSecondary: See the problem we're solving
+  scrollHint: Scroll to start
+  coords: 25.03°N 121.56°E · TPE
+  open: Non-profit · Open source · Beginners welcome
+
+coffeeChat:
+  kicker: Split 02 · Once is enough
+  title: Nobody should have to answer the same question a hundred times.
+  body: Every new founder starts networking from scratch and runs the same round of coffee chats, and the people who've been there answer the same questions again and again. We turn each conversation into open notes, so one chat helps a hundred founders.
+  bubbles:
+    - How do I set up a company in the US?
+    - What capital do I declare for a Taiwan company?
+    - Where do I find angel investors?
+    - What belongs in a funding plan?
+    - How do I do small talk in the Valley?
+    - B2B or B2C — what actually changes?
+    - I've built it. How do I find distribution?
+    - What am I not even thinking about?
+  note: One set of open notes
+  stat: 1 conversation → N founders
+
+voyage:
+  kicker: Split 03 · Going global
+  title: Taipei to San Francisco.
+  body: Getting to Silicon Valley takes resources — and without them, it's hard to build a global perspective in the first place. We want to map every checkpoint on that route, together.
+  origin: TPE · Taipei
+  destination: SFO · San Francisco
+  checkpoints:
+    - name: Incorporation
+      detail: What does it take in Taiwan, and in the US? How much capital do you declare?
+    - name: Funding plan
+      detail: Get the costs right up front, so you're not distracted halfway through.
+    - name: Network
+      detail: A handshake isn't a relationship. Introductions come from people who actually know you.
+    - name: Culture fit
+      detail: Small talk and cultural distance take practice — better with people practising alongside you.
+  footnote: We don't promise introductions or matchmaking. What we do is turn each conversation into open notes.
+  railLabel: Checkpoints on the route
+
+skillTree:
+  kicker: Split 04 · Builds
+  title: There's no single way to build a company. There are builds.
+  body: Like a game guide — different founder-market fit, team composition and industry lead to different fastest routes. We want to turn hard numbers and lived experience into a skill tree.
+  status: Work in progress · Example nodes — help us map them
+  branches:
+    - id: fmf
+      name: Founder-Market Fit
+      hint: What superpower does your background set you up for?
+    - id: team
+      name: Team composition
+      hint: How different founding-team skill mixes play out.
+    - id: industry
+      name: Industry
+      hint: Build on Taiwan's strengths, or go pure software.
+  builds:
+    - id: fmf-build
+      branch: fmf
+      name: The superpower build
+      for: Founders working out which superpower their background suits
+      cost: Still mapping
+      grind: "Grind: still mapping"
+    - id: team-build
+      branch: team
+      name: The team-combo build
+      for: Founders looking for the right mix of skills in a founding team
+      cost: Still mapping
+      grind: "Grind: still mapping"
+    - id: tw-advantage
+      branch: industry
+      name: The Taiwan-advantage build
+      for: Founders building on Taiwan's strengths, or going pure software
+      cost: Still mapping
+      grind: "Grind: still mapping"
+  cta: Help map the builds
+
+character:
+  kicker: Split 05 · Pick your starting point
+  title: You don't have to be ready.
+  body: We look for sincerity — not background, skill or résumé.
+  prompt: Pick the class that fits you best
+  classes:
+    - id: student
+      name: Student
+      line: Still in school, not sure founding is for you? Perfect. Come meet people and find out whether you can build something great.
+    - id: pm
+      name: New PM
+      line: You make product calls every day — you just haven't pictured yourself as a founder yet. Come see how others are thinking about it.
+    - id: employee
+      name: Still employed
+      line: You don't have to quit to start. Join at your own pace; share when you want, learn when you want.
+    - id: founder
+      name: Founder
+      line: Bring the fight you're in right now. Your experience is exactly the know-how someone else needs.
+    - id: senior
+      name: Valley veteran
+      line: One conversation with you becomes open notes the next hundred Taiwanese founders can learn from. That's why we started as a media project first.
+  ui:
+    keys: ← → to switch　Enter to pick
+    swipe: Swipe to see other starting points
+    selected: Your starting point
+
+aiNative:
+  kicker: Split 06 · AI-Native
+  title: AI in the product. AI-native in how we build it.
+  body: Everyone's intro says what they can help with and what they want to help with. When you want to start something, ask an AI and find people who might want to build it with you.
+  prompt: Who can help me build a landing page?
+  disclaimer: "Demo: matches public data inside your browser; no external AI is called. Finding someone doesn't mean they've agreed — it's always their call."
+  points:
+    - Specs, plans and intros all live in one open-source repo
+    - Every contribution gets credit
+    - Everything is published as llms.txt, so your AI can read it too
+  terminal:
+    title: anf-agent
+    path: ~/mono/Members
+    badge: Local demo
+    reading: Reading public intros and team assignments
+    count: "{n} people"
+    keywords: Keywords
+    thinking: Matching
+    found: Found {n} people who might fit
+    none: Nobody in the public data mentions this yet. Put what you want to start in your intro so others can find you.
+    fields:
+      roles: Team assignment
+      canHelp: Can help with
+      wantHelp: Wants to help with
+    inputLabel: Try another question
+    placeholder: e.g. Who designs logos?
+    submit: Match
+    suggestions:
+      - Who can help me build a landing page?
+      - Who designs logos?
+      - Who can help write copy?
+
+notDo:
+  kicker: Split 07 · What we don't do
+  title: Some things we choose not to do.
+  items:
+    - No membership fee. The only step to join is a self-intro PR.
+    - No selling. We never use our name, notes or events to promote anyone's product.
+    - No paid placement. No ads or paid recommendations in our notes or events.
+
+finish:
+  kicker: Split 08 · Finish line
+  title: Your run starts here.
+  body: The only requirement is an honest introduction. No impressive résumé or finished project needed — if you're still exploring, just say so.
+  steps:
+    - name: Join Discord
+      detail: Where people talk, join events and find collaborators. It's an invitation, not a requirement.
+      link: discord
+    - name: Star the repo on GitHub
+      detail: A star supports the open notes and makes it easy to find your way back.
+      link: mono
+    - name: Read three documents
+      detail: The founder's letter, the constitution and the application process — what we're doing, the principles we share, and how to join.
+      link: founderWords
+    - name: Submit your intro as a PR
+      detail: Who you are, why you're joining, what you hope to get, what you can share, and your R&R. Once it's approved, you're a member.
+      link: membersGuide
+  timerStop: RUN STARTED
+  start: START
+  goal: GOAL
+  checkpoint: CP
+  stepCta: Open
+  resultLabel: Your time
+  resultNote: The clock stops here. From now on, no rush.
+  ctaPrimary: Submit your intro
+  ctaSecondary: Join Discord
+  event:
+    label: Happening now
+    title: Got a question for Silicon Valley founders about going global?
+    body: Drop it in the Discord event thread. We're collecting them to bring to people who've done it.
+    cta: Add your question
+    via: Discord event thread
+
+credits:
+  kicker: Split 09 · Credits
+  title: Credits
+  subtitle: Everyone's work deserves to be seen.
+  sections:
+    website: Website
+    org: Organization document contributors
+    community: Community
+  thanks: Thanks for playing.
+  replay: Run it again
+  next: The next name could be yours.
+  pause: Pause credits
+  play: Resume
+
+footer:
+  tagline: One set of notes to level up every founder in Taiwan.
+  nonprofit: Non-profit · Open notes
+  logoCredit: Logo by Sun
+  aiCredit: Some visuals and code were made with AI
+  backToStart: Back to start
+  explore: Explore
+  community: Community
+  openSource: This site is open source too

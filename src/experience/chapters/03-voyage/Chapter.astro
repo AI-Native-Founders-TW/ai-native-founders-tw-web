@@ -1,0 +1,887 @@
+---
+// 章節 03：出海（台北 → 舊金山）。整站最電影感的一段。
+// 畫面來源依序：Seedance 影格序列（有 manifest 時）→ Three.js 程式版本 → SVG＋CSS（品質 low）→ 靜態圖文（減少動態／無 JS）。
+// 文字永遠是 HTML，疊在畫面上。
+import { existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import type { Copy } from '../../../i18n/copy';
+import { CHECKPOINT_T, ROUTE_KM } from './geo';
+import { svgScene } from './svg-scene';
+
+interface Props {
+  copy: Copy;
+}
+const { copy } = Astro.props;
+const v = copy.voyage;
+const checkpoints: { name: string; detail: string }[] = v.checkpoints;
+
+// 影格 manifest：可用 PUBLIC_VOYAGE_MANIFEST 指到 R2 等外部網址；否則看 public/ 裡有沒有
+const envManifest = import.meta.env.PUBLIC_VOYAGE_MANIFEST as string | undefined;
+const localManifest = existsSync(
+  fileURLToPath(new URL('../../../../public/media/voyage/manifest.json', import.meta.url)),
+)
+  ? '/media/voyage/manifest.json'
+  : undefined;
+const manifest = envManifest || localManifest;
+
+const S = svgScene(1600, 900);
+const cpPts = CHECKPOINT_T.map((t) => S.at(t));
+const phrases = (t: string) => t.match(/[^，。、；：！？,.!?]+[，。、；：！？,.!?]*/gu) ?? [t];
+const [originCode, originName] = String(v.origin)
+  .split('·')
+  .map((x: string) => x.trim());
+const [destCode, destName] = String(v.destination)
+  .split('·')
+  .map((x: string) => x.trim());
+const km = Math.round(ROUTE_KM).toLocaleString('en-US');
+const pad = (n: number) => String(n).padStart(2, '0');
+---
+
+<section
+  id="ch-03"
+  data-split="03"
+  data-split-name={copy.hud.splits['03']}
+  class="vy relative"
+  aria-labelledby="vy-title"
+  data-manifest={manifest}
+  data-km={Math.round(ROUTE_KM)}
+>
+  <div class="vy-wrap">
+    <div class="vy-stage">
+      <div class="vy-visual" aria-hidden="true">
+        <div class="vy-sky"><div class="vy-sky-dawn"></div><div class="vy-sky-sun"></div></div>
+        <svg class="vy-svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+          <defs>
+            <radialGradient id="vy-g-earth" cx="50%" cy="0%" r="60%">
+              <stop offset="0" stop-color="#111849"></stop>
+              <stop offset="1" stop-color="#05071c"></stop>
+            </radialGradient>
+            <pattern id="vy-g-dots" width="13" height="13" patternUnits="userSpaceOnUse">
+              <circle cx="6.5" cy="6.5" r="1.05" fill="#4d47fe" opacity="0.55"></circle>
+            </pattern>
+            <linearGradient id="vy-g-shade" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#070a26" stop-opacity="0"></stop>
+              <stop offset="0.07" stop-color="#070a26" stop-opacity="0.92"></stop>
+            </linearGradient>
+            <linearGradient id="vy-g-route" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#4d47fe"></stop>
+              <stop offset="0.55" stop-color="#19acfe"></stop>
+              <stop offset="1" stop-color="#decffe"></stop>
+            </linearGradient>
+            <radialGradient id="vy-g-head">
+              <stop offset="0" stop-color="#ffffff"></stop>
+              <stop offset="0.2" stop-color="#cfeaff" stop-opacity="0.9"></stop>
+              <stop offset="0.55" stop-color="#19acfe" stop-opacity="0.25"></stop>
+              <stop offset="1" stop-color="#4d47fe" stop-opacity="0"></stop>
+            </radialGradient>
+            <radialGradient id="vy-g-dawn">
+              <stop offset="0" stop-color="#ffffff" stop-opacity="0.95"></stop>
+              <stop offset="0.12" stop-color="#decffe" stop-opacity="0.85"></stop>
+              <stop offset="0.45" stop-color="#19acfe" stop-opacity="0.35"></stop>
+              <stop offset="1" stop-color="#1e47f3" stop-opacity="0"></stop>
+            </radialGradient>
+          </defs>
+          <g class="vy-svg-stars">
+            {S.stars.map((s) => <circle cx={s.x.toFixed(1)} cy={s.y.toFixed(1)} r={s.r.toFixed(2)} opacity={s.o.toFixed(2)} />)}
+          </g>
+          <ellipse class="vy-svg-dawn" cx={S.dawn.x} cy={S.dawn.y} rx="900" ry="520" fill="url(#vy-g-dawn)"></ellipse>
+          <circle class="vy-svg-earth" cx={S.earth.cx} cy={S.earth.cy} r={S.earth.r} fill="url(#vy-g-earth)"></circle>
+          <circle class="vy-svg-dots" cx={S.earth.cx} cy={S.earth.cy} r={S.earth.r} fill="url(#vy-g-dots)"></circle>
+          <circle class="vy-svg-shade" cx={S.earth.cx} cy={S.earth.cy} r={S.earth.r} fill="url(#vy-g-shade)"></circle>
+          <circle class="vy-svg-limb vy-svg-limb-3" cx={S.earth.cx} cy={S.earth.cy} r={S.earth.r}></circle>
+          <circle class="vy-svg-limb vy-svg-limb-2" cx={S.earth.cx} cy={S.earth.cy} r={S.earth.r}></circle>
+          <circle class="vy-svg-limb vy-svg-limb-1" cx={S.earth.cx} cy={S.earth.cy} r={S.earth.r}></circle>
+          <path class="vy-svg-plan" d={S.d}></path>
+          <path class="vy-svg-glow" d={S.d} pathLength="1"></path>
+          <path class="vy-svg-route" d={S.d} pathLength="1"></path>
+          {
+            cpPts.map((p, i) => (
+              <g class="vy-svg-cp" data-i={i} transform={`translate(${p.x.toFixed(1)} ${p.y.toFixed(1)})`}>
+                <circle class="vy-svg-cp-pulse" r="10" />
+                <circle class="vy-svg-cp-ring" r="7" />
+                <circle class="vy-svg-cp-dot" r="2.5" />
+              </g>
+            ))
+          }
+          <g class="vy-svg-city" transform={`translate(${S.tpe.x.toFixed(1)} ${S.tpe.y.toFixed(1)})`}>
+            <circle r="16" fill="url(#vy-g-head)" opacity="0.8"></circle><circle r="3" fill="#cfeaff"></circle>
+          </g>
+          <g class="vy-svg-city vy-svg-city-b" transform={`translate(${S.sfo.x.toFixed(1)} ${S.sfo.y.toFixed(1)})`}>
+            <circle r="16" fill="url(#vy-g-head)" opacity="0.8"></circle><circle r="3" fill="#decffe"></circle>
+          </g>
+          <g class="vy-svg-head" transform={`translate(${S.sfo.x.toFixed(1)} ${S.sfo.y.toFixed(1)})`}>
+            <circle r="34" fill="url(#vy-g-head)"></circle>
+            <circle r="3.5" fill="#fff"></circle>
+          </g>
+        </svg>
+        <canvas class="vy-canvas"></canvas>
+        <div class="vy-grain"></div>
+        <div class="vy-vignette"></div>
+        <div class="vy-tags">
+          <span class="vy-tag vy-tag-city" data-tag="tpe"><b>{originCode}</b>{originName}</span>
+          <span class="vy-tag vy-tag-city is-dest" data-tag="sfo"><b>{destCode}</b>{destName}</span>
+          {
+            checkpoints.map((c, i) => (
+              <span class="vy-tag vy-tag-cp" data-tag={`cp${i}`}>
+                <b>CP·{pad(i + 1)}</b>
+                {c.name}
+              </span>
+            ))
+          }
+        </div>
+      </div>
+
+      <header class="vy-intro">
+        <p class="vy-kicker">{v.kicker}</p>
+        <h2 id="vy-title" class="vy-title">
+          {
+            phrases(v.title).map((ph) => (
+              <span class="vy-ph">
+                <span class="vy-ph-in">{ph}</span>
+              </span>
+            ))
+          }
+        </h2>
+        <p class="vy-od">
+          <span class="vy-od-city"><b>{originCode}</b>{originName}</span>
+          <span class="vy-od-line" aria-hidden="true"><i></i></span>
+          <span class="sr-only">→</span>
+          <span class="vy-od-city"><b>{destCode}</b>{destName}</span>
+          <span class="vy-od-km" aria-hidden="true">{km} km</span>
+        </p>
+      </header>
+
+      <p class="vy-body">{v.body}</p>
+
+      <ol class="vy-cps">
+        {
+          checkpoints.map((c, i) => (
+            <li class="vy-cp" data-i={i}>
+              <span class="vy-cp-idx" aria-hidden="true">
+                CHECKPOINT <b>{pad(i + 1)}</b> / {pad(checkpoints.length)}
+              </span>
+              <h3 class="vy-cp-name">{c.name}</h3>
+              <p class="vy-cp-detail">{c.detail}</p>
+            </li>
+          ))
+        }
+      </ol>
+
+      <div class="vy-data" aria-hidden="true">
+        <div class="vy-data-row"><span>ROUTE</span><b>{originCode} → {destCode}</b></div>
+        <div class="vy-data-row"><span>POS</span><b class="vy-pos">25.08°N 121.23°E</b></div>
+        <div class="vy-data-row"><span>FLOWN</span><b><span class="vy-flown">0</span> km</b></div>
+        <div class="vy-data-row"><span>REMAIN</span><b><span class="vy-remain">{km}</span> km</b></div>
+        <div class="vy-data-bar"><i></i></div>
+      </div>
+
+      <nav class="vy-rail" aria-label={v.railLabel ?? v.kicker}>
+        <span class="vy-rail-end" aria-hidden="true">{originCode}</span>
+        <div class="vy-rail-track">
+          <div class="vy-rail-fill" aria-hidden="true"></div>
+          <div class="vy-rail-head" aria-hidden="true"></div>
+          {
+            checkpoints.map((c, i) => (
+              <button type="button" class="vy-rail-cp" data-i={i} style={`--at:${CHECKPOINT_T[i] * 100}%`}>
+                <span class="vy-rail-dot" aria-hidden="true" />
+                <span class="vy-rail-name">{c.name}</span>
+              </button>
+            ))
+          }
+        </div>
+        <span class="vy-rail-end" aria-hidden="true">{destCode}</span>
+      </nav>
+
+      <div class="vy-arrive">
+        <p class="vy-dest" aria-hidden="true"><b>{destCode}</b><span>{destName}</span></p>
+        <p class="vy-foot">{v.footnote}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { onReady } from '../../engine';
+
+  onReady(async (s) => {
+    const root = document.getElementById('ch-03');
+    if (!root || s.reduced) return;
+    const { initVoyage } = await import('./voyage');
+    initVoyage(root, s);
+  });
+</script>
+
+<style>
+  .vy {
+    --vy-pad: clamp(1.25rem, 5vw, 5.5rem);
+    background: var(--color-night-950);
+    isolation: isolate;
+  }
+  .vy-stage {
+    position: relative;
+    padding: clamp(5rem, 12vh, 8rem) var(--vy-pad);
+    display: grid;
+    gap: 2.5rem;
+  }
+
+  /* ── 畫面層 ── */
+  .vy-visual {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    border-radius: 1.25rem;
+    overflow: hidden;
+    border: 1px solid rgb(184 192 224 / 0.12);
+  }
+  .vy-sky,
+  .vy-sky-dawn,
+  .vy-sky-sun,
+  .vy-svg,
+  .vy-canvas,
+  .vy-vignette,
+  .vy-grain,
+  .vy-tags {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .vy-sky {
+    background:
+      radial-gradient(120% 70% at 50% 100%, #111849 0%, transparent 60%),
+      linear-gradient(180deg, #05071c 0%, #0b0f38 70%, #111849 100%);
+  }
+  .vy-sky-dawn {
+    opacity: var(--dawn, 0.85);
+    background:
+      radial-gradient(70% 55% at 85% 82%, rgb(222 207 254 / 0.85), transparent 60%),
+      linear-gradient(180deg, #0b0f38 0%, #0e2da6 34%, #1e47f3 58%, #19acfe 82%, #8fd8ff 100%);
+  }
+  .vy-sky-sun {
+    opacity: var(--dawn, 0.85);
+    background: radial-gradient(18% 14% at 86% 81%, rgb(255 255 255 / 0.9), rgb(222 207 254 / 0.4) 40%, transparent 70%);
+    mix-blend-mode: screen;
+  }
+  .vy-svg {
+    display: block;
+  }
+  .vy-svg-stars circle {
+    fill: #dfe8ff;
+  }
+  .vy-svg-stars {
+    opacity: calc(1 - var(--dawn, 0.85) * 0.9);
+  }
+  .vy-svg-dawn {
+    opacity: var(--dawn, 0.85);
+    mix-blend-mode: screen;
+  }
+  .vy-svg-limb {
+    fill: none;
+  }
+  .vy-svg-limb-1 {
+    stroke: #8fd8ff;
+    stroke-width: 1.5;
+    opacity: 0.9;
+  }
+  .vy-svg-limb-2 {
+    stroke: #19acfe;
+    stroke-width: 8;
+    opacity: 0.22;
+  }
+  .vy-svg-limb-3 {
+    stroke: #4d47fe;
+    stroke-width: 36;
+    opacity: 0.14;
+  }
+  .vy-svg-plan {
+    fill: none;
+    stroke: rgb(184 192 224 / 0.35);
+    stroke-width: 1.25;
+    stroke-dasharray: 3 9;
+    vector-effect: non-scaling-stroke;
+  }
+  .vy-svg-route,
+  .vy-svg-glow {
+    fill: none;
+    stroke: url(#vy-g-route);
+    stroke-linecap: round;
+    stroke-dasharray: 1 2;
+    stroke-dashoffset: var(--route-off, 0);
+  }
+  .vy-svg-route {
+    stroke-width: 2.5;
+  }
+  .vy-svg-glow {
+    stroke-width: 14;
+    opacity: 0.22;
+  }
+  .vy-svg-cp-ring {
+    fill: #0b0f38;
+    stroke: #decffe;
+    stroke-width: 1.5;
+  }
+  .vy-svg-cp-dot {
+    fill: #decffe;
+  }
+  .vy-svg-cp-pulse {
+    fill: none;
+    stroke: #8fd8ff;
+    stroke-width: 1;
+    opacity: 0;
+  }
+  .vy-canvas {
+    display: none;
+  }
+  .vy-vignette {
+    pointer-events: none;
+    background:
+      radial-gradient(120% 90% at 50% 50%, transparent 55%, rgb(5 7 28 / 0.65) 100%),
+      linear-gradient(180deg, rgb(7 10 38 / 0.55) 0%, transparent 18%, transparent 70%, rgb(7 10 38 / 0.7) 100%);
+  }
+  .vy-grain {
+    pointer-events: none;
+    opacity: 0.07;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .vy-tags {
+    display: none;
+    pointer-events: none;
+  }
+
+  /* ── 文字 ── */
+  .vy-kicker {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-sky-400);
+    margin-bottom: 1.25rem;
+  }
+  .vy-title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(2.25rem, 6vw, 5.75rem);
+    line-height: 1.2;
+    letter-spacing: -0.03em;
+  }
+  .vy-ph {
+    display: inline-block;
+    white-space: nowrap;
+    overflow: clip;
+    overflow-clip-margin: 0.12em;
+    padding-bottom: 0.05em;
+    vertical-align: top;
+  }
+  .vy-ph-in {
+    display: inline-block;
+  }
+  .vy-od {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.9rem;
+    margin-top: 1.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    color: var(--color-mist-300);
+  }
+  .vy-od-city b {
+    color: var(--color-snow-50);
+    font-weight: 600;
+    margin-right: 0.5rem;
+    letter-spacing: 0.08em;
+  }
+  .vy-od-line {
+    position: relative;
+    width: clamp(3rem, 10vw, 8rem);
+    height: 1px;
+    background: linear-gradient(90deg, rgb(25 172 254 / 0.9), rgb(222 207 254 / 0.6));
+  }
+  .vy-od-line i {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    width: 5px;
+    height: 5px;
+    margin-top: -2.5px;
+    border-radius: 50%;
+    background: #decffe;
+    box-shadow: 0 0 10px #decffe;
+  }
+  .vy-od-km {
+    color: var(--color-mist-500);
+  }
+  .vy-body {
+    max-width: 36rem;
+    color: var(--color-mist-300);
+    font-size: clamp(1rem, 1.2vw, 1.125rem);
+    line-height: 1.85;
+  }
+  .vy-cps {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  }
+  .vy-cp {
+    position: relative;
+    padding: 1.25rem 1.25rem 1.35rem;
+    border-radius: 1rem;
+    background: linear-gradient(180deg, rgb(17 24 73 / 0.75), rgb(11 15 56 / 0.6));
+    border: 1px solid rgb(184 192 224 / 0.12);
+  }
+  .vy-cp-idx {
+    display: block;
+    font: 0.68rem/1 var(--font-mono);
+    letter-spacing: 0.18em;
+    color: var(--color-mist-500);
+  }
+  .vy-cp-idx b {
+    color: var(--color-sky-400);
+    font-weight: 600;
+  }
+  .vy-cp-name {
+    margin-top: 0.85rem;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.5rem;
+    letter-spacing: -0.01em;
+  }
+  .vy-cp-detail {
+    margin-top: 0.5rem;
+    color: var(--color-mist-300);
+    line-height: 1.75;
+    font-size: 0.9375rem;
+  }
+  .vy-data,
+  .vy-rail,
+  .vy-dest {
+    display: none;
+  }
+  .vy:not(.is-live) .vy-intro {
+    order: -2;
+  }
+  .vy:not(.is-live) .vy-body {
+    order: -1;
+  }
+  .vy-foot {
+    font-size: 0.875rem;
+    color: var(--color-mist-300);
+    line-height: 1.7;
+    padding-left: 0.9rem;
+    border-left: 2px solid rgb(206 171 253 / 0.5);
+    max-width: 40rem;
+  }
+
+  /* ───────── 動態版 ───────── */
+  .vy.is-live .vy-wrap {
+    height: 720vh;
+  }
+  .vy.is-live .vy-stage {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    height: 100svh;
+    padding: 0;
+    display: block;
+    overflow: hidden;
+  }
+  .vy.is-live .vy-visual {
+    position: absolute;
+    inset: 0;
+    aspect-ratio: auto;
+    border: 0;
+    border-radius: 0;
+  }
+  .vy.is-live .vy-sky-dawn,
+  .vy.is-live .vy-sky-sun,
+  .vy.is-live .vy-svg-dawn {
+    opacity: var(--dawn, 0);
+  }
+  .vy.is-live .vy-svg-stars {
+    opacity: calc(1 - var(--dawn, 0) * 0.9);
+  }
+  .vy.is-live[data-mode='webgl'] .vy-svg,
+  .vy.is-live[data-mode='frames'] .vy-svg {
+    display: none;
+  }
+  .vy.is-live[data-mode='webgl'] .vy-canvas,
+  .vy.is-live[data-mode='frames'] .vy-canvas {
+    display: block;
+  }
+  .vy.is-live .vy-tags {
+    display: block;
+  }
+  .vy-tag {
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.32rem 0.6rem 0.32rem 0.45rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    color: var(--color-snow-50);
+    background: rgb(7 10 38 / 0.55);
+    border: 1px solid rgb(143 216 255 / 0.3);
+    backdrop-filter: blur(6px);
+    white-space: nowrap;
+    opacity: 0;
+    will-change: transform, opacity;
+  }
+  .vy-tag b {
+    font: 600 0.65rem/1 var(--font-mono);
+    letter-spacing: 0.1em;
+    color: var(--color-sky-400);
+  }
+  .vy-tag.is-dest b,
+  .vy-tag-cp b {
+    color: var(--color-lavender-100);
+  }
+  .vy-tag::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    width: 1px;
+    height: 22px;
+    background: linear-gradient(rgb(143 216 255 / 0.6), transparent);
+  }
+
+  .vy.is-live .vy-intro {
+    position: absolute;
+    z-index: 4;
+    left: var(--vy-pad);
+    right: var(--vy-pad);
+    top: 50%;
+    transform: translateY(-58%);
+    text-align: center;
+  }
+  .vy.is-live .vy-title {
+    font-size: clamp(2.5rem, 7.2vw, 7rem);
+    text-shadow: 0 10px 60px rgb(7 10 38 / 0.8);
+  }
+  .vy.is-live .vy-od {
+    justify-content: center;
+  }
+  .vy.is-live .vy-body {
+    position: absolute;
+    z-index: 4;
+    left: var(--vy-pad);
+    bottom: 8.5rem;
+    max-width: 30rem;
+    opacity: 0;
+    text-shadow: 0 2px 20px rgb(7 10 38 / 0.9);
+  }
+  .vy.is-live .vy-cps {
+    position: absolute;
+    z-index: 4;
+    left: var(--vy-pad);
+    bottom: 8rem;
+    width: min(26rem, calc(100% - 2 * var(--vy-pad)));
+    display: block;
+  }
+  .vy.is-live .vy-cp {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    opacity: 0;
+    background: linear-gradient(180deg, rgb(11 15 56 / 0.72), rgb(7 10 38 / 0.6));
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-color: rgb(143 216 255 / 0.18);
+    will-change: transform, opacity;
+  }
+  .vy.is-live .vy-cp::before {
+    content: '';
+    position: absolute;
+    left: -1px;
+    top: 1.25rem;
+    bottom: 1.25rem;
+    width: 2px;
+    border-radius: 2px;
+    background: linear-gradient(#19acfe, #decffe);
+  }
+  .vy.is-live .vy-cp-name {
+    font-size: clamp(1.75rem, 2.6vw, 2.5rem);
+  }
+
+  .vy.is-live .vy-data {
+    display: grid;
+    gap: 0.4rem;
+    position: absolute;
+    z-index: 4;
+    left: var(--vy-pad);
+    top: clamp(5.5rem, 13vh, 7.5rem);
+    width: 15.5rem;
+    padding: 0.9rem 1rem;
+    border-radius: 0.75rem;
+    background: rgb(7 10 38 / 0.45);
+    border: 1px solid rgb(184 192 224 / 0.12);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    font: 0.7rem/1.2 var(--font-mono);
+    opacity: 0;
+  }
+  .vy-data-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .vy-data-row span {
+    color: var(--color-mist-500);
+    letter-spacing: 0.14em;
+  }
+  .vy-data-row b {
+    font-weight: 500;
+    color: var(--color-snow-50);
+    font-variant-numeric: tabular-nums;
+  }
+  .vy-data-bar {
+    margin-top: 0.35rem;
+    height: 2px;
+    background: rgb(184 192 224 / 0.15);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .vy-data-bar i {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, #19acfe, #decffe);
+    transform-origin: 0 50%;
+    transform: scaleX(var(--head, 0));
+  }
+
+  .vy.is-live .vy-rail {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    position: absolute;
+    z-index: 4;
+    left: var(--vy-pad);
+    right: var(--vy-pad);
+    bottom: clamp(1.5rem, 5vh, 2.75rem);
+    font: 600 0.7rem/1 var(--font-mono);
+    letter-spacing: 0.12em;
+    color: var(--color-mist-300);
+    opacity: 0;
+  }
+  .vy-rail-track {
+    position: relative;
+    flex: 1;
+    height: 2.5rem;
+  }
+  .vy-rail-track::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 1px;
+    background: rgb(184 192 224 / 0.22);
+  }
+  .vy-rail-fill {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 1px;
+    margin-top: -0.5px;
+    background: linear-gradient(90deg, #19acfe, #decffe);
+    transform-origin: 0 50%;
+    transform: scaleX(var(--head, 0));
+    box-shadow: 0 0 10px rgb(25 172 254 / 0.6);
+  }
+  .vy-rail-head {
+    position: absolute;
+    top: 50%;
+    left: calc(var(--head, 0) * 100%);
+    width: 9px;
+    height: 9px;
+    margin: -4.5px 0 0 -4.5px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow:
+      0 0 0 3px rgb(25 172 254 / 0.25),
+      0 0 16px #8fd8ff;
+  }
+  .vy-rail-cp {
+    position: absolute;
+    left: var(--at);
+    top: 0;
+    height: 100%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0 0.5rem;
+    cursor: pointer;
+    color: inherit;
+    background: none;
+    border: 0;
+    font: inherit;
+  }
+  .vy-rail-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    border: 1px solid rgb(184 192 224 / 0.6);
+    background: var(--color-night-950);
+    transition:
+      background-color 0.4s,
+      border-color 0.4s,
+      transform 0.4s var(--ease-run);
+  }
+  .vy-rail-name {
+    position: absolute;
+    bottom: calc(100% + 0.2rem);
+    white-space: nowrap;
+    font-family: var(--font-sans);
+    font-weight: 500;
+    letter-spacing: 0;
+    font-size: 0.75rem;
+    color: var(--color-mist-500);
+    transition: color 0.4s;
+  }
+  .vy-rail-cp.is-passed .vy-rail-dot {
+    background: #decffe;
+    border-color: #decffe;
+  }
+  .vy-rail-cp.is-current .vy-rail-dot {
+    transform: scale(1.5);
+    box-shadow: 0 0 12px #decffe;
+  }
+  .vy-rail-cp.is-passed .vy-rail-name,
+  .vy-rail-cp:hover .vy-rail-name,
+  .vy-rail-cp:focus-visible .vy-rail-name {
+    color: var(--color-snow-50);
+  }
+
+  .vy.is-live .vy-arrive {
+    position: absolute;
+    z-index: 4;
+    right: var(--vy-pad);
+    bottom: 8rem;
+    width: min(30rem, calc(100% - 2 * var(--vy-pad)));
+    text-align: right;
+  }
+  .vy.is-live .vy-dest {
+    display: flex;
+    justify-content: flex-end;
+    align-items: baseline;
+    gap: 1rem;
+    opacity: 0;
+    font-family: var(--font-display);
+    color: var(--color-night-950);
+  }
+  .vy-dest b {
+    font-weight: 800;
+    font-size: clamp(3.5rem, 8vw, 7.5rem);
+    line-height: 0.9;
+    letter-spacing: -0.04em;
+    color: var(--color-snow-50);
+    text-shadow: 0 6px 40px rgb(14 45 166 / 0.55);
+  }
+  .vy-dest span {
+    font-weight: 700;
+    font-size: clamp(1.25rem, 2vw, 1.75rem);
+    color: var(--color-snow-50);
+    text-shadow: 0 2px 20px rgb(14 45 166 / 0.6);
+  }
+  .vy.is-live .vy-foot {
+    margin-top: 1.25rem;
+    margin-left: auto;
+    opacity: 0;
+    text-align: left;
+    color: var(--color-snow-50);
+    background: rgb(7 10 38 / 0.42);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 0.85rem 1rem;
+    border-radius: 0.6rem;
+    border-left: 2px solid #decffe;
+  }
+
+  @media (max-width: 767px) {
+    .vy.is-live .vy-wrap {
+      height: 620vh;
+    }
+    .vy.is-live .vy-title {
+      font-size: clamp(2.25rem, 11vw, 3.25rem);
+    }
+    .vy.is-live .vy-od {
+      gap: 0.6rem;
+      font-size: 0.72rem;
+    }
+    .vy.is-live .vy-od-km {
+      flex-basis: 100%;
+      text-align: center;
+    }
+    .vy.is-live .vy-intro {
+      transform: translateY(-75%);
+    }
+    .vy.is-live .vy-body,
+    .vy.is-live .vy-cps,
+    .vy.is-live .vy-arrive {
+      bottom: 9.5rem;
+      left: var(--vy-pad);
+      right: var(--vy-pad);
+      width: auto;
+      max-width: none;
+    }
+    .vy.is-live .vy-body {
+      font-size: 0.9375rem;
+      line-height: 1.75;
+    }
+    .vy.is-live .vy-cp {
+      padding: 1rem 1.1rem 1.1rem;
+    }
+    .vy.is-live .vy-cp-name {
+      font-size: 1.6rem;
+      margin-top: 0.6rem;
+    }
+    .vy.is-live .vy-cp-detail {
+      font-size: 0.875rem;
+    }
+    .vy.is-live .vy-arrive {
+      text-align: left;
+    }
+    .vy.is-live .vy-dest {
+      justify-content: flex-start;
+    }
+    .vy.is-live .vy-data {
+      top: 4.25rem;
+      left: var(--vy-pad);
+      right: var(--vy-pad);
+      width: auto;
+      grid-template-columns: 1fr 1fr;
+      column-gap: 1rem;
+      padding: 0.7rem 0.85rem;
+      font-size: 0.62rem;
+    }
+    .vy-data-row:first-child {
+      display: none;
+    }
+    .vy-data-bar {
+      grid-column: 1 / -1;
+    }
+    .vy.is-live .vy-rail {
+      bottom: 6rem;
+      gap: 0.6rem;
+    }
+    .vy-rail-name {
+      display: none;
+    }
+    .vy-rail-cp {
+      padding: 0 0.75rem;
+    }
+  }
+
+  @media (max-width: 899px) {
+    .vy:not(.is-live) .vy-visual {
+      aspect-ratio: 4 / 3;
+    }
+  }
+</style>

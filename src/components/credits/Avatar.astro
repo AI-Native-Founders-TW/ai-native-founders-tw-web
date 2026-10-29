@@ -1,0 +1,84 @@
+---
+// 頭像：有 GitHub 帳號用 GitHub 頭像，否則用 Logo 漸層的字母徽章；AI 工具用方形徽章。
+interface Props {
+  name: string;
+  avatar?: string;
+  kind?: 'person' | 'tool';
+  size?: number;
+  class?: string;
+}
+const { name, avatar, kind = 'person', size = 44, class: cls } = Astro.props;
+
+const initial = (Array.from(name.trim().replace(/^[^\p{L}\p{N}]+/u, ''))[0] ?? '?').toUpperCase();
+let h = 0;
+for (const ch of name) h = (h * 31 + (ch.codePointAt(0) ?? 0)) >>> 0;
+const palettes = [
+  ['#380c74', '#1e47f3'],
+  ['#1e47f3', '#19acfe'],
+  ['#6a2bd9', '#4d47fe'],
+  ['#4d47fe', '#19acfe'],
+  ['#380c74', '#6a2bd9'],
+  ['#0e2da6', '#8fd8ff'],
+];
+const [a, b] = palettes[h % palettes.length];
+const angle = 120 + (h % 5) * 25;
+---
+
+<span
+  class:list={['av', kind === 'tool' && 'av--tool', cls]}
+  style={`--s:${size}px;--a:${a};--b:${b};--ang:${angle}deg`}
+  aria-hidden="true"
+>
+  {kind === 'tool' ? (
+    <svg viewBox="0 0 24 24" width="55%" height="55%"><path d="M12 2.5l1.9 6.1 6.1 1.9-6.1 1.9L12 18.5l-1.9-6.1L4 10.5l6.1-1.9L12 2.5z" fill="currentColor" /></svg>
+  ) : (
+    <span class="av-letter">{initial}</span>
+  )}
+  {avatar && kind !== 'tool' && <img src={avatar} alt="" width={size} height={size} loading="lazy" decoding="async" />}
+</span>
+
+<style>
+  .av {
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+    flex: none;
+    width: var(--s);
+    height: var(--s);
+    border-radius: 50%;
+    overflow: hidden;
+    background: linear-gradient(var(--ang), var(--a), var(--b));
+    box-shadow:
+      inset 0 0 0 1px rgb(255 255 255 / 0.18),
+      0 0 0 2px rgb(7 10 38 / 1);
+    color: var(--color-snow-50);
+  }
+  .av::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(circle at 30% 25%, rgb(255 255 255 / 0.28), transparent 55%);
+    pointer-events: none;
+  }
+  .av-letter {
+    font-family: 'Noto Sans TC', var(--font-display);
+    font-weight: 800;
+    font-size: calc(var(--s) * 0.42);
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  .av img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .av--tool {
+    border-radius: 28%;
+    background: linear-gradient(135deg, rgb(206 171 253 / 0.18), rgb(25 172 254 / 0.12));
+    box-shadow: inset 0 0 0 1px rgb(206 171 253 / 0.45);
+    color: var(--color-lavender-300);
+  }
+</style>

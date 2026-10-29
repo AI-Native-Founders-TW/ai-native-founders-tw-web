@@ -1,0 +1,192 @@
+---
+// 章節 07：我們不做什麼。全站最安靜的一段：大字、留白、慢速逐行浮現。節奏的反差就是設計。
+import type { Copy } from '../../../i18n/copy';
+
+interface Props {
+  copy: Copy;
+}
+const { copy } = Astro.props;
+const n = copy.notDo;
+const pad = (i: number) => String(i).padStart(2, '0');
+
+// 每一條拆成「主句」與「說明」：在第一個句號後斷開（中文「。」，英文「. 」）
+const items = (n.items as string[]).map((s) => {
+  const m = s.match(/^(.+?[。．]|.+?\.\s)(.*)$/s);
+  const head = (m ? m[1] : s).trim();
+  const tail = (m ? m[2] : '').trim();
+  // 句首的「不」用淡紫色標出，讀起來像一個誓言
+  const lead = head.startsWith('不') ? '不' : '';
+  // 在逗號後斷行，避免把詞拆開
+  const parts = (lead ? head.slice(1) : head).split(/(?<=[，,])\s*/);
+  return { lead, parts, tail };
+});
+---
+
+<section
+  id="ch-07"
+  data-split="07"
+  data-split-name={copy.hud.splits['07']}
+  class="ch07 relative"
+  aria-labelledby="ch07-title"
+>
+  <div class="ch07-inner">
+    <p class="ch07-kicker" data-ch07-fade>{n.kicker}</p>
+    <h2 id="ch07-title" class="ch07-title" data-ch07-fade>{n.title}</h2>
+    <ol class="ch07-list">
+      {
+        items.map((it, i) => (
+          <li class="ch07-item" data-ch07-item>
+            <span class="ch07-num" aria-hidden="true">
+              {pad(i + 1)}
+            </span>
+            <p class="ch07-head">
+              {it.parts.map((part, k) => (
+                <span class="ch07-part">
+                  {k === 0 && it.lead && <span class="ch07-lead">{it.lead}</span>}
+                  {part}
+                </span>
+              ))}
+            </p>
+            {it.tail && <p class="ch07-tail">{it.tail}</p>}
+            <span class="ch07-rule" aria-hidden="true" />
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>
+
+<script>
+  import { gsap, onReady, ScrollTrigger } from '../../engine';
+
+  onReady(({ reduced }) => {
+    const root = document.getElementById('ch-07');
+    if (!root) return;
+
+    // 告訴其他層（HUD、WebGL）這一段要安靜；誰想配合就聽這個事件
+    ScrollTrigger.create({
+      trigger: root,
+      start: 'top 60%',
+      end: 'bottom 40%',
+      onToggle: (self) => window.dispatchEvent(new CustomEvent('anf:quiet', { detail: { active: self.isActive } })),
+    });
+
+    if (reduced) return;
+
+    // 慢。每一行自己出現，不追著捲動跑。
+    for (const el of root.querySelectorAll<HTMLElement>('[data-ch07-fade]')) {
+      gsap.from(el, {
+        opacity: 0,
+        duration: 1.8,
+        ease: 'sine.out',
+        scrollTrigger: { trigger: el, start: 'top 85%', toggleActions: 'play none none none' },
+      });
+    }
+    for (const item of root.querySelectorAll<HTMLElement>('[data-ch07-item]')) {
+      const head = item.querySelector('.ch07-head');
+      const tail = item.querySelector('.ch07-tail');
+      const num = item.querySelector('.ch07-num');
+      const rule = item.querySelector('.ch07-rule');
+      const tl = gsap.timeline({ scrollTrigger: { trigger: item, start: 'top 78%', toggleActions: 'play none none none' } });
+      tl.from(head, { opacity: 0, y: 14, duration: 1.9, ease: 'sine.out' })
+        .from(num, { opacity: 0, duration: 1.4, ease: 'sine.out' }, 0.3)
+        .from(tail, { opacity: 0, duration: 1.6, ease: 'sine.out' }, 0.9)
+        .from(rule, { scaleX: 0, duration: 2.6, ease: 'power2.inOut' }, 0.5);
+    }
+  });
+</script>
+
+<style>
+  .ch07 {
+    background: var(--color-night-950);
+    padding-block: clamp(10rem, 30vh, 18rem);
+  }
+  .ch07-inner {
+    width: min(100% - 2.5rem, 64rem);
+    margin-inline: auto;
+  }
+  .ch07-kicker {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--color-mist-300);
+  }
+  .ch07-title {
+    margin-top: 1.75rem;
+    font-family: 'Noto Sans TC', var(--font-sans);
+    font-weight: 500;
+    font-size: clamp(1.35rem, 2.2vw, 1.9rem);
+    line-height: 1.6;
+    color: var(--color-mist-300);
+    letter-spacing: 0.04em;
+  }
+  .ch07-list {
+    margin-top: clamp(6rem, 18vh, 11rem);
+    display: grid;
+    gap: clamp(6rem, 17vh, 11rem);
+  }
+  .ch07-item {
+    position: relative;
+    display: grid;
+    grid-template-columns: 4.5rem 1fr;
+    column-gap: 1rem;
+    padding-bottom: clamp(2.5rem, 6vh, 3.5rem);
+  }
+  .ch07-num {
+    grid-row: 1 / span 2;
+    padding-top: 0.9em;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    color: var(--color-mist-500);
+  }
+  .ch07-head {
+    font-family: 'Noto Sans TC', var(--font-display);
+    font-weight: 700;
+    font-size: clamp(2.3rem, 5.6vw, 5rem);
+    line-height: 1.22;
+    letter-spacing: -0.015em;
+    color: var(--color-snow-50);
+    text-wrap: balance;
+  }
+  .ch07-part {
+    display: inline-block;
+  }
+  .ch07-lead {
+    color: var(--color-lavender-300);
+  }
+  .ch07-tail {
+    margin-top: 1.4rem;
+    font-size: clamp(1.08rem, 1.5vw, 1.35rem);
+    line-height: 1.8;
+    color: var(--color-mist-300);
+    max-width: 30em;
+  }
+  .ch07-rule {
+    position: absolute;
+    left: 5.5rem;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    background: linear-gradient(90deg, rgb(184 192 224 / 0.28), rgb(184 192 224 / 0.04));
+    transform-origin: left center;
+  }
+
+  @media (max-width: 767px) {
+    .ch07-item {
+      grid-template-columns: 1fr;
+    }
+    .ch07-num {
+      grid-row: auto;
+      padding-top: 0;
+      margin-bottom: 1rem;
+    }
+    .ch07-rule {
+      left: 0;
+    }
+    .ch07-head {
+      font-size: clamp(2.1rem, 10vw, 3rem);
+    }
+  }
+</style>

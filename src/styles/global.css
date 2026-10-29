@@ -1,0 +1,302 @@
+@import "tailwindcss";
+
+/* 設計 token：取色自 Sun 的 Logo（docs/05-品牌與視覺.md） */
+@theme {
+  --color-night-950: #070a26;
+  --color-night-900: #0b0f38;
+  --color-night-850: #0b1139;
+  --color-night-800: #111849;
+  --color-royal-700: #0e2da6;
+  --color-royal-500: #1e47f3;
+  --color-iris-500: #4d47fe;
+  --color-violet-900: #380c74;
+  --color-violet-600: #6a2bd9;
+  --color-sky-400: #19acfe;
+  --color-sky-200: #8fd8ff;
+  --color-lavender-300: #ceabfd;
+  --color-lavender-100: #decffe;
+  --color-snow-50: #f6fbfc;
+  --color-mist-300: #b8c0e0;
+  --color-mist-500: #7d87b5;
+
+  --font-sans: "Inter", "Noto Sans TC", system-ui, sans-serif;
+  --font-display: "Inter Tight", "Noto Sans TC", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --ease-run: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-snap: cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+:root {
+  /* Logo 光帶 A 在首屏的位置與大小（512 單位的盒子）；開場與舞台共用，保證無縫接軌 */
+  --mark-S: min(98vh, 66vw);
+  --mark-cx: 71vw;
+  --mark-cy: 50vh;
+  --gradient-brand: linear-gradient(135deg, #380c74 0%, #1e47f3 55%, #19acfe 100%);
+  --gradient-text: linear-gradient(100deg, #f6fbfc 0%, #decffe 35%, #8fd8ff 70%, #19acfe 100%);
+  --glow-sky: 0 0 40px rgb(25 172 254 / 0.45);
+  color-scheme: dark;
+}
+
+@media (max-width: 899px) {
+  :root {
+    --mark-S: min(122vw, 64svh);
+    --mark-cx: 50vw;
+    --mark-cy: 30svh;
+  }
+}
+
+html {
+  background: var(--color-night-950);
+  color: var(--color-snow-50);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Lenis */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+::selection {
+  background: rgb(77 71 254 / 0.6);
+  color: var(--color-snow-50);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-sky-400);
+  outline-offset: 3px;
+}
+
+@utility text-gradient {
+  background: var(--gradient-text);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@utility bg-brand {
+  background: var(--gradient-brand);
+}
+
+@utility container-run {
+  width: min(100% - 2.5rem, 78rem);
+  margin-inline: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* 中文斷行：phrases() 切好的詞 */
+.phrase {
+  display: inline-block;
+}
+
+/* 程式設定焦點（錨點跳轉後）不畫外框 */
+[tabindex="-1"]:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* 舞台在最底層；內容在上面 */
+main,
+body > footer {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── 按鈕系統（Hero、終點線、Header 共用）──────────────────────── */
+.btn-run {
+  --h: 56px;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  height: var(--h);
+  padding: 0 8px 0 26px;
+  border-radius: 999px;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  text-decoration: none;
+  isolation: isolate;
+  overflow: hidden;
+  transition:
+    box-shadow 0.5s var(--ease-run),
+    background-color 0.4s var(--ease-run),
+    border-color 0.4s var(--ease-run),
+    color 0.4s var(--ease-run);
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-run:active {
+  scale: 0.98;
+}
+/* 頁面最前面的「跳過 run」連結（鍵盤的第一個焦點） */
+.skip-link {
+  position: fixed;
+  left: 16px;
+  top: 16px;
+  z-index: 200;
+  padding: 12px 18px;
+  border-radius: 999px;
+  font-weight: 600;
+  color: var(--color-night-950);
+  background: linear-gradient(100deg, #fff, #decffe);
+  translate: 0 -200%;
+  transition: translate 0.3s var(--ease-run);
+}
+.skip-link:focus-visible {
+  translate: 0 0;
+}
+.btn-run__icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: calc(var(--h) - 16px);
+  height: calc(var(--h) - 16px);
+  border-radius: 50%;
+  overflow: hidden;
+  flex: none;
+  transition:
+    scale 0.5s var(--ease-run),
+    background-color 0.4s;
+}
+.btn-run__icon svg {
+  grid-area: 1 / 1;
+  width: 16px;
+  height: 16px;
+  transition: translate 0.55s var(--ease-run);
+}
+.btn-run__icon svg + svg {
+  translate: -260% 260%;
+}
+.btn-run:hover .btn-run__icon svg:first-child,
+.btn-run:focus-visible .btn-run__icon svg:first-child {
+  translate: 260% -260%;
+}
+.btn-run:hover .btn-run__icon svg + svg,
+.btn-run:focus-visible .btn-run__icon svg + svg {
+  translate: 0 0;
+}
+/* 向下的箭頭（頁內捲動） */
+.btn-run[data-dir="down"] .btn-run__icon svg + svg {
+  translate: 0 -260%;
+}
+.btn-run[data-dir="down"]:hover .btn-run__icon svg:first-child,
+.btn-run[data-dir="down"]:focus-visible .btn-run__icon svg:first-child {
+  translate: 0 260%;
+}
+.btn-run[data-dir="down"]:hover .btn-run__icon svg + svg,
+.btn-run[data-dir="down"]:focus-visible .btn-run__icon svg + svg {
+  translate: 0 0;
+}
+
+.btn-run--primary {
+  color: var(--color-night-950);
+  background: linear-gradient(100deg, #ffffff 0%, #ece3ff 45%, #cfe9ff 100%);
+  box-shadow:
+    0 0 0 1px rgb(255 255 255 / 0.5) inset,
+    0 10px 30px -8px rgb(140 120 255 / 0.55),
+    0 0 50px -10px rgb(25 172 254 / 0.45);
+}
+.btn-run--primary::before {
+  /* 掃過的光 */
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    100deg,
+    transparent 30%,
+    rgb(255 255 255 / 0.95) 50%,
+    transparent 70%
+  );
+  translate: -110% 0;
+  transition: translate 0.9s var(--ease-run);
+}
+.btn-run--primary:hover::before,
+.btn-run--primary:focus-visible::before {
+  translate: 110% 0;
+}
+.btn-run--primary:hover,
+.btn-run--primary:focus-visible {
+  box-shadow:
+    0 0 0 1px rgb(255 255 255 / 0.7) inset,
+    0 14px 40px -8px rgb(140 120 255 / 0.75),
+    0 0 70px -6px rgb(25 172 254 / 0.6);
+}
+.btn-run--primary .btn-run__icon {
+  color: var(--color-snow-50);
+  background: var(--color-night-950);
+}
+.btn-run--primary:hover .btn-run__icon {
+  background: var(--color-royal-500);
+}
+
+.btn-run--ghost {
+  color: var(--color-snow-50);
+  background: rgb(255 255 255 / 0.04);
+  border: 1px solid rgb(255 255 255 / 0.18);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.btn-run--ghost:hover,
+.btn-run--ghost:focus-visible {
+  background: rgb(255 255 255 / 0.09);
+  border-color: rgb(222 207 254 / 0.55);
+}
+.btn-run--ghost .btn-run__icon {
+  color: var(--color-snow-50);
+  background: rgb(255 255 255 / 0.08);
+}
+
+.btn-run--sm {
+  --h: 40px;
+  gap: 8px;
+  padding: 0 5px 0 16px;
+  font-size: 14px;
+}
+.btn-run--sm .btn-run__icon svg {
+  width: 13px;
+  height: 13px;
+}
+
+@media (max-width: 479px) {
+  .btn-run:not(.btn-run--sm) {
+    --h: 54px;
+    font-size: 15.5px;
+  }
+}
+
+/* 「Split 0X」的眉標：所有章節可共用 */
+.kicker-run {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-mist-300);
+}
+.kicker-run::before {
+  content: "";
+  width: 22px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--color-iris-500), var(--color-sky-400));
+}

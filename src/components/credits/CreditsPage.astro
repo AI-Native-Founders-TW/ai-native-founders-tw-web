@@ -1,0 +1,820 @@
+---
+import { links } from '../../config/links';
+import { type ContributionRecord, getFullGraph, type PersonRecord } from '../../graph';
+import { getCopy, getLocale } from '../../i18n/copy';
+import { getPageCopy, localePath } from '../page/page-copy';
+// /credits 與 /en/credits 共用。名單全部來自內容圖譜（git、mono 資訊貢獻者、credits.yml），不在頁面寫死。
+import Shell from '../page/Shell.astro';
+import Avatar from './Avatar.astro';
+
+const locale = getLocale(Astro.currentLocale);
+const en = locale === 'en';
+const copy = getCopy(locale);
+const c = getPageCopy('credits', locale);
+const g = await getFullGraph();
+
+const byId = new Map(g.people.map((p) => [p.id, p]));
+const label = (x: ContributionRecord) => (en && x.labelEn ? x.labelEn : x.label);
+const pad = (n: number) => String(n).padStart(2, '0');
+const commits = (n: number) => `${n} ${n === 1 ? c.labels.commit : c.labels.commits}`;
+
+// ── 網站製作 ──
+const web = g.contributions.filter((x) => x.target === 'website');
+const leadOrder = ['Owner', 'Collab'];
+const leads: { person: PersonRecord; role: string }[] = [];
+for (const role of leadOrder) {
+  for (const x of web.filter((w) => w.kind === 'lead' && w.label === role)) {
+    const p = byId.get(x.person);
+    if (p && !leads.some((l) => l.person.id === p.id)) leads.push({ person: p, role: label(x) });
+  }
+}
+const otherRoles = new Map<
+  string,
+  { label: string; kind: string; source?: string; people: { p: PersonRecord; count?: number }[] }
+>();
+for (const x of web.filter((w) => !(w.kind === 'lead' && leadOrder.includes(w.label)))) {
+  const p = byId.get(x.person);
+  if (!p) continue;
+  const key = `${x.kind}:${x.label}`;
+  const r = otherRoles.get(key) ?? { label: label(x), kind: x.kind, source: x.source, people: [] };
+  r.people.push({ p, count: x.count });
+  otherRoles.set(key, r);
+}
+const roleRows = [...otherRoles.values()].sort(
+  (a, b) => Number(a.kind === 'code') - Number(b.kind === 'code'),
+);
+const webLabelsFor = (id: string) => [
+  ...new Set(
+    web
+      .filter((w) => w.person === id && !(w.kind === 'lead' && leadOrder.includes(w.label)))
+      .map(label),
+  ),
+];
+
+// ── 組織文件 ──
+const docs = g.documents.filter((d) => d.contributors.length);
+const orgPeople = [
+  ...new Set(g.contributions.filter((x) => x.target === 'org').map((x) => x.person)),
+]
+  .map((id) => byId.get(id))
+  .filter((p): p is PersonRecord => Boolean(p))
+  .map((p) => ({ p, docs: docs.filter((d) => d.contributors.includes(p.id)).length }));
+
+// ── 社群 ──
+const intros = g.intros.map((i) => ({ i, p: byId.get(i.person) })).filter((x) => x.p);
+const monoAuthors = g.contributions
+  .filter((x) => x.target === 'community' && x.source === 'mono')
+  .map((x) => ({ p: byId.get(x.person), count: x.count ?? 1 }))
+  .filter((x): x is { p: PersonRecord; count: number } => Boolean(x.p))
+  .sort((a, b) => b.count - a.count);
+
+// ── 統計 ──
+const humans = new Set(
+  g.contributions.map((x) => x.person).filter((id) => byId.get(id)?.kind !== 'tool'),
+);
+const totalContrib = g.contributions.reduce((s, x) => s + (x.count ?? 1), 0);
+const stats = [
+  { n: humans.size, k: c.hero.stats.people },
+  { n: totalContrib, k: c.hero.stats.contributions },
+  { n: docs.length, k: c.hero.stats.documents },
+];
+const date = g.generatedAt.slice(0, 10);
+const creditsYml = `${links.webRepo}/blob/main/src/content/credits.yml`;
+---
+
+<Shell copy={copy} title={c.meta.title} description={c.meta.description}>
+  <!-- Hero -->
+  <section class="pg-section cr-hero" aria-labelledby="cr-title">
+    <div class="container-run">
+      <p class="pg-kicker pg-rise">{c.hero.kicker}</p>
+      <h1 id="cr-title" class="pg-display cr-title pg-rise" style="--i:1">
+        <span>{c.hero.title}</span>
+        <span class="pg-accent">{c.hero.titleAccent}</span>
+      </h1>
+      <div class="cr-hero-foot">
+        <p class="pg-lead pg-rise" style="--i:2">{c.hero.body}</p>
+        <dl class="cr-stats pg-rise" style="--i:3">
+          {
+            stats.map((s) => (
+              <div class="cr-stat">
+                <dd class="cr-stat-n">{s.n}</dd>
+                <dt class="cr-stat-k">{s.k}</dt>
+              </div>
+            ))
+          }
+        </dl>
+      </div>
+      <p class="cr-source pg-rise" style="--i:4">
+        <span>{c.hero.source}</span>
+        {g.sources.mono && <code>mono@{g.sources.mono.commit}</code>}
+        {g.sources.web && <code>web@{g.sources.web.commit}</code>}
+        <code>credits.yml</code>
+        <span class="cr-source-sep">·</span>
+        <span>{c.hero.generated} {date}</span>
+        <a class="pg-link" href="/api/v1/contributions.json">contributions.json</a>
+      </p>
+      {g.sources.fallback && <p class="cr-fallback">{c.hero.fallback}</p>}
+    </div>
+  </section>
+
+  <!-- Layer 01：網站製作 -->
+  <section class="pg-section" id="website" aria-labelledby="cr-web-title">
+    <div class="container-run">
+      <header class="pg-head pg-head--split">
+        <div>
+          <p class="pg-kicker">{c.sections.website.kicker}</p>
+          <h2 id="cr-web-title" class="pg-h2" style="margin-top:1.25rem">{c.sections.website.title}</h2>
+        </div>
+        <p class="pg-body">{c.sections.website.body}</p>
+      </header>
+
+      <ul class="cr-leads">
+        {
+          leads.map(({ person, role }, i) => (
+            <li class:list={['cr-lead pg-card', i === 0 && 'cr-lead--owner']}>
+              <span class="cr-lead-role">{role}</span>
+              <Avatar name={person.name} avatar={person.avatar} size={i === 0 ? 88 : 64} />
+              <span class="cr-lead-name">
+                {person.github ? (
+                  <a href={`https://github.com/${person.github}`} target="_blank" rel="noopener noreferrer">
+                    {person.name}
+                  </a>
+                ) : (
+                  person.name
+                )}
+              </span>
+              <span class="cr-lead-meta">
+                {webLabelsFor(person.id).map((l) => (
+                  <span class="pg-chip">{l}</span>
+                ))}
+                {person.github && <span class="cr-handle">@{person.github}</span>}
+              </span>
+              {person.roles?.length ? (
+                <span class="cr-lead-roles">
+                  {person.roles.map((r) => (
+                    <span class="cr-rolechip">
+                      <b>{r.source}</b>
+                      {r.label}
+                    </span>
+                  ))}
+                </span>
+              ) : null}
+            </li>
+          ))
+        }
+      </ul>
+
+      <ol class="cr-roles">
+        {
+          roleRows.map((r, i) => (
+            <li class="cr-role">
+              <span class="cr-role-no">{pad(i + 1)}</span>
+              <span class="cr-role-label">
+                {r.label}
+                {r.source && /^A\d+$/.test(r.source) && <span class="pg-chip pg-chip--lav">{r.source}</span>}
+              </span>
+              <span class="cr-role-people">
+                {r.people.map(({ p, count }) => (
+                  <span class="cr-person">
+                    <Avatar name={p.name} avatar={p.avatar} kind={p.kind} size={30} />
+                    <span>{p.name}</span>
+                    {p.kind === 'tool' && <span class="pg-chip pg-chip--lav">{c.labels.tool}</span>}
+                    {count ? <span class="cr-count">{commits(count)}</span> : null}
+                  </span>
+                ))}
+              </span>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+
+  <!-- Layer 02：組織文件 -->
+  <section class="pg-section" id="org" aria-labelledby="cr-org-title">
+    <div class="container-run">
+      <header class="pg-head pg-head--split">
+        <div>
+          <p class="pg-kicker">{c.sections.org.kicker}</p>
+          <h2 id="cr-org-title" class="pg-h2" style="margin-top:1.25rem">{c.sections.org.title}</h2>
+        </div>
+        <p class="pg-body">{c.sections.org.body}</p>
+      </header>
+
+      <div class="cr-org">
+        <div>
+          <h3 class="cr-sub">{c.sections.org.docs}</h3>
+          <ul class="cr-docs">
+            {
+              docs.map((d) => (
+                <li class="cr-doc pg-card pg-card--quiet">
+                  <a class="cr-doc-title" href={d.url} target="_blank" rel="noopener noreferrer">
+                    <span>{d.title}</span>
+                    <span class="cr-doc-arrow" aria-hidden="true">↗</span>
+                  </a>
+                  <code class="cr-doc-path">{d.path}</code>
+                  <span class="cr-stack">
+                    {d.contributors.slice(0, 12).map((id) => {
+                      const p = byId.get(id);
+                      return p ? <Avatar name={p.name} avatar={p.avatar} size={28} /> : null;
+                    })}
+                  </span>
+                  <span class="cr-doc-names">
+                    {d.contributors.map((id) => byId.get(id)?.name ?? id).join(en ? ', ' : '、')}
+                  </span>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+        <div>
+          <h3 class="cr-sub">{c.sections.org.people}</h3>
+          <ul class="cr-plist">
+            {
+              orgPeople.map(({ p, docs: n }) => (
+                <li class="cr-prow">
+                  <Avatar name={p.name} avatar={p.avatar} size={40} />
+                  <span class="cr-prow-main">
+                    <span class="cr-prow-name">
+                      {p.name}
+                      {p.aliases.filter((a) => a !== p.name && !/^ray\s?貓$|^ray貓$/i.test(a) && a.toLowerCase() !== p.name.toLowerCase()).slice(0, 2).map((a) => (
+                        <span class="cr-alias">{a}</span>
+                      ))}
+                    </span>
+                    {p.roles?.length ? (
+                      <span class="cr-prow-roles" title={c.labels.roles}>
+                        {p.roles.map((r) => (
+                          <span class="cr-rolechip">
+                            <b>{r.source}</b>
+                            {r.label}
+                          </span>
+                        ))}
+                      </span>
+                    ) : null}
+                  </span>
+                  <span class="cr-count">
+                    {n} {c.sections.org.docCount}
+                  </span>
+                </li>
+              ))
+            }
+          </ul>
+          <p class="cr-footnote">
+            {c.labels.roles}{en ? ": " : "："}
+            {
+              g.actions[0] ? (
+                <a class="pg-link" href={g.actions[0].url} target="_blank" rel="noopener noreferrer">
+                  {g.actions[0].log.split('/').pop()?.replace(/\.md$/, '')}
+                </a>
+              ) : null
+            }
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Layer 03：社群 -->
+  <section class="pg-section" id="community" aria-labelledby="cr-com-title">
+    <div class="container-run">
+      <header class="pg-head pg-head--split">
+        <div>
+          <p class="pg-kicker">{c.sections.community.kicker}</p>
+          <h2 id="cr-com-title" class="pg-h2" style="margin-top:1.25rem">{c.sections.community.title}</h2>
+        </div>
+        <p class="pg-body">{c.sections.community.body}</p>
+      </header>
+
+      <h3 class="cr-sub">
+        {c.sections.community.introsTitle}
+        <span class="cr-count">{intros.length}</span>
+      </h3>
+      {
+        intros.length ? (
+          <ul class="cr-wall">
+            {intros.map(({ i, p }) => (
+              <li>
+                <a class="cr-tile" href={i.url} target="_blank" rel="noopener noreferrer" title={c.labels.viewIntro}>
+                  <Avatar name={p!.name} avatar={p!.avatar} size={36} />
+                  <span class="cr-tile-name">{p!.name}</span>
+                  {p!.github && <span class="cr-handle">@{p!.github}</span>}
+                </a>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div class="cr-empty pg-card">
+            <span class="cr-empty-slots" aria-hidden="true">
+              {Array.from({ length: 7 }, (_, k) => (
+                <span class="cr-slot" style={`--k:${k}`} />
+              ))}
+            </span>
+            <p class="cr-empty-text">{c.sections.community.introsEmpty}</p>
+            <a class="pg-btn pg-btn--sm" href={localePath(locale, '/join') + '#builder'}>
+              {c.sections.community.introsCta}
+              <span class="pg-arrow" aria-hidden="true">→</span>
+            </a>
+          </div>
+        )
+      }
+
+      {
+        monoAuthors.length > 0 && (
+          <>
+            <h3 class="cr-sub" style="margin-top:3rem">
+              {c.sections.community.commitsTitle}
+            </h3>
+            <ul class="cr-wall">
+              {monoAuthors.map(({ p, count }) => (
+                <li>
+                  <span class="cr-tile">
+                    <Avatar name={p.name} avatar={p.avatar} size={36} />
+                    <span class="cr-tile-name">{p.name}</span>
+                    <span class="cr-count">{commits(count)}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </>
+        )
+      }
+    </div>
+  </section>
+
+  <!-- 怎麼加入名單 -->
+  <section class="pg-section cr-howto" aria-labelledby="cr-howto-title">
+    <div class="container-run">
+      <div class="cr-howto-card pg-card">
+        <h2 id="cr-howto-title" class="cr-howto-title">{c.howto.title}</h2>
+        <dl class="cr-howto-list">
+          {
+            c.howto.items.map((it: { k: string; v: string }, i: number) => (
+              <div>
+                <dt>
+                  <span>{pad(i + 1)}</span>
+                  {it.k}
+                </dt>
+                <dd>{it.v}</dd>
+              </div>
+            ))
+          }
+        </dl>
+        <a class="pg-btn pg-btn--ghost pg-btn--sm" href={creditsYml} target="_blank" rel="noopener noreferrer">
+          {c.howto.cta}<span class="pg-arrow" aria-hidden="true">↗</span>
+        </a>
+      </div>
+    </div>
+  </section>
+</Shell>
+
+<style>
+  .cr-hero {
+    padding-top: clamp(3rem, 8vh, 6rem);
+  }
+  .cr-title {
+    margin-top: 1.75rem;
+    display: flex;
+    flex-direction: column;
+  }
+  .cr-hero-foot {
+    margin-top: 2.5rem;
+    display: grid;
+    gap: 2.5rem;
+    align-items: end;
+  }
+  @media (min-width: 1024px) {
+    .cr-hero-foot {
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+      gap: 5rem;
+    }
+  }
+  .cr-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin: 0;
+    border-top: 1px solid rgb(184 192 224 / 0.16);
+  }
+  .cr-stat {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 0.4rem;
+    padding: 1.25rem 0 0;
+  }
+  .cr-stat + .cr-stat {
+    padding-left: 1.25rem;
+    border-left: 1px solid rgb(184 192 224 / 0.12);
+  }
+  .cr-stat-n {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(2.4rem, 4.5vw, 3.6rem);
+    line-height: 1;
+    letter-spacing: -0.04em;
+    font-variant-numeric: tabular-nums;
+    background: var(--gradient-text);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .cr-stat-k {
+    font-size: 0.82rem;
+    color: var(--color-mist-300);
+  }
+  .cr-source {
+    margin-top: 2.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--color-mist-500);
+  }
+  .cr-source code {
+    padding: 0.2rem 0.55rem;
+    border-radius: 6px;
+    color: var(--color-mist-300);
+    background: rgb(255 255 255 / 0.04);
+    box-shadow: inset 0 0 0 1px rgb(184 192 224 / 0.12);
+  }
+  .cr-fallback {
+    margin-top: 1rem;
+    color: var(--color-lavender-100);
+    font-size: 0.9rem;
+  }
+
+  /* 網站製作：lead 卡 */
+  .cr-leads {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .cr-lead--owner {
+    grid-column: 1 / -1;
+  }
+  @media (max-width: 1023px) {
+    .cr-lead {
+      min-height: 0 !important;
+      padding: 1.1rem !important;
+      gap: 0.7rem !important;
+    }
+    .cr-lead-name {
+      font-size: 1.2rem !important;
+    }
+  }
+  @media (min-width: 1024px) {
+    .cr-leads {
+      grid-template-columns: 1.4fr repeat(3, 1fr);
+      gap: 1rem;
+    }
+    .cr-lead--owner {
+      grid-column: auto;
+    }
+  }
+  .cr-lead {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.5rem;
+    min-height: 15rem;
+    transition: transform 0.5s var(--ease-run);
+  }
+  .cr-lead:hover {
+    transform: translateY(-4px);
+  }
+  .cr-lead--owner {
+    background:
+      linear-gradient(160deg, rgb(56 12 116 / 0.55), rgb(14 45 166 / 0.35) 55%, rgb(25 172 254 / 0.18)) padding-box,
+      linear-gradient(140deg, rgb(206 171 253 / 0.7), rgb(30 71 243 / 0.2) 40%, rgb(25 172 254 / 0.7)) border-box;
+    box-shadow: 0 40px 100px -40px rgb(77 71 254 / 0.7);
+  }
+  .cr-lead-role {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--color-sky-200);
+  }
+  .cr-lead--owner .cr-lead-role {
+    color: var(--color-lavender-100);
+  }
+  .cr-lead-name {
+    margin-top: 0.25rem;
+    font-family: 'Noto Sans TC', var(--font-display);
+    font-weight: 800;
+    font-size: 1.5rem;
+    letter-spacing: -0.02em;
+  }
+  .cr-lead--owner .cr-lead-name {
+    font-size: 2rem;
+  }
+  .cr-lead-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    min-height: 1.6rem;
+  }
+  .cr-lead-roles {
+    margin-top: auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgb(184 192 224 / 0.1);
+    width: 100%;
+  }
+  .cr-handle {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--color-mist-500);
+  }
+
+  /* 網站製作：角色列 */
+  .cr-roles {
+    margin-top: 2.5rem;
+    border-top: 1px solid rgb(184 192 224 / 0.14);
+  }
+  .cr-role {
+    display: grid;
+    grid-template-columns: 2.75rem minmax(0, 1fr);
+    gap: 0.75rem 1rem;
+    align-items: center;
+    padding: 1.15rem 0;
+    border-bottom: 1px solid rgb(184 192 224 / 0.14);
+  }
+  @media (min-width: 900px) {
+    .cr-role {
+      grid-template-columns: 2.75rem minmax(0, 2fr) minmax(0, 3fr);
+    }
+  }
+  @media (max-width: 899px) {
+    .cr-role-people {
+      grid-column: 2;
+    }
+  }
+  .cr-role-no {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--color-sky-200);
+  }
+  .cr-role-label {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem;
+    font-weight: 600;
+    font-size: 1.02rem;
+  }
+  .cr-role-people {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem 1.4rem;
+  }
+  .cr-person {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.95rem;
+  }
+  .cr-count {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--color-mist-500);
+    white-space: nowrap;
+  }
+
+  /* 組織文件 */
+  .cr-org {
+    display: grid;
+    gap: 3rem;
+  }
+  @media (min-width: 1024px) {
+    .cr-org {
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+      gap: 4rem;
+    }
+  }
+  .cr-sub {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 400;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-mist-300);
+  }
+  .cr-docs {
+    display: grid;
+    gap: 0.85rem;
+  }
+  .cr-doc {
+    display: grid;
+    gap: 0.6rem;
+    padding: 1.25rem 1.4rem;
+    transition: transform 0.4s var(--ease-run);
+  }
+  .cr-doc:hover {
+    transform: translateX(4px);
+  }
+  .cr-doc-title {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    font-family: 'Noto Sans TC', var(--font-display);
+    font-weight: 700;
+    font-size: 1.15rem;
+  }
+  .cr-doc-title:hover {
+    color: var(--color-sky-200);
+  }
+  .cr-doc-arrow {
+    color: var(--color-mist-500);
+  }
+  .cr-doc-path {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--color-mist-500);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .cr-stack {
+    display: flex;
+    padding-left: 6px;
+    margin-top: 0.25rem;
+  }
+  .cr-stack > :global(*) {
+    margin-left: -6px;
+  }
+  .cr-doc-names {
+    font-size: 0.85rem;
+    line-height: 1.6;
+    color: var(--color-mist-300);
+  }
+  .cr-plist {
+    border-top: 1px solid rgb(184 192 224 / 0.14);
+  }
+  .cr-prow {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 1rem;
+    align-items: center;
+    padding: 0.9rem 0;
+    border-bottom: 1px solid rgb(184 192 224 / 0.14);
+  }
+  .cr-prow-main {
+    display: grid;
+    gap: 0.35rem;
+    min-width: 0;
+  }
+  .cr-prow-name {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5rem;
+    font-weight: 600;
+  }
+  .cr-alias {
+    font-weight: 400;
+    font-size: 0.8rem;
+    color: var(--color-mist-500);
+  }
+  .cr-prow-roles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+  }
+  .cr-rolechip {
+    display: inline-flex;
+    gap: 0.4rem;
+    padding: 0.12rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    color: var(--color-mist-300);
+    background: rgb(255 255 255 / 0.035);
+  }
+  .cr-rolechip b {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    color: var(--color-lavender-300);
+  }
+  .cr-footnote {
+    margin-top: 1rem;
+    font-size: 0.78rem;
+    color: var(--color-mist-500);
+  }
+
+  /* 社群牆：可容納上百人 */
+  .cr-wall {
+    display: grid;
+    gap: 0.6rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
+  }
+  .cr-tile {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.7rem 0.9rem;
+    border-radius: 14px;
+    background: rgb(13 18 60 / 0.5);
+    box-shadow: inset 0 0 0 1px rgb(184 192 224 / 0.1);
+    transition: box-shadow 0.3s;
+  }
+  a.cr-tile:hover {
+    box-shadow: inset 0 0 0 1px rgb(206 171 253 / 0.45);
+  }
+  .cr-tile-name {
+    flex: 1;
+    min-width: 0;
+    font-weight: 600;
+    font-size: 0.95rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .cr-empty {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1.25rem 2rem;
+    padding: 1.75rem 2rem;
+  }
+  .cr-empty-slots {
+    display: flex;
+    padding-left: 10px;
+  }
+  .cr-slot {
+    width: 40px;
+    height: 40px;
+    margin-left: -10px;
+    border-radius: 50%;
+    border: 1.5px dashed rgb(184 192 224 / 0.35);
+    background: var(--color-night-900);
+    animation: cr-slot 3.2s var(--ease-run) infinite;
+    animation-delay: calc(var(--k) * 0.18s);
+  }
+  .cr-slot:first-child {
+    border: 0;
+    background: var(--gradient-brand);
+    box-shadow: 0 0 18px rgb(25 172 254 / 0.6);
+  }
+  @keyframes cr-slot {
+    50% {
+      border-color: rgb(143 216 255 / 0.7);
+    }
+  }
+  .cr-empty-text {
+    flex: 1;
+    min-width: 14rem;
+    font-family: 'Noto Sans TC', var(--font-display);
+    font-weight: 700;
+    font-size: 1.15rem;
+  }
+
+  /* How to */
+  .cr-howto {
+    padding-top: 0;
+    border-top: 0 !important;
+  }
+  .cr-howto-card {
+    display: grid;
+    gap: 1.75rem;
+    padding: clamp(1.75rem, 3.5vw, 2.75rem);
+  }
+  .cr-howto-title {
+    font-family: 'Noto Sans TC', var(--font-display);
+    font-weight: 800;
+    font-size: 1.5rem;
+  }
+  .cr-howto-list {
+    display: grid;
+    gap: 1.5rem;
+    margin: 0;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+  }
+  .cr-howto-list dt {
+    display: flex;
+    gap: 0.6rem;
+    font-weight: 600;
+  }
+  .cr-howto-list dt span {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--color-sky-200);
+    padding-top: 0.15rem;
+  }
+  .cr-howto-list dd {
+    margin: 0.4rem 0 0;
+    font-size: 0.88rem;
+    line-height: 1.7;
+    color: var(--color-mist-300);
+  }
+  .cr-howto-card > .pg-btn {
+    justify-self: start;
+  }
+</style>

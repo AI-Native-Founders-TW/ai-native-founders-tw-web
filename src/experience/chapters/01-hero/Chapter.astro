@@ -1,0 +1,262 @@
+---
+// 章節 01：Hero。標題是真正的 HTML（LCP、爬蟲可見）；舞台的光帶在背後。
+// 首訪：開場揭幕時 SplitText 逐字升起。回訪：不重播，避免已畫出的字閃一下。
+import type { Copy } from '../../../i18n/copy';
+import { phrases } from '../../engine/phrase';
+
+interface Props {
+  copy: Copy;
+}
+const { copy } = Astro.props;
+const h = copy.hero;
+const lines: string[] =
+  Array.isArray(h.titleLines) && h.titleLines.join('') === h.title ? h.titleLines : [h.title];
+const down = 'M8 3v10M4 9l4 4 4-4';
+---
+
+<section id="ch-01" data-split="01" data-split-name={copy.hud.splits['01']} class="hero">
+  <div class="hero__scrim" aria-hidden="true"></div>
+  <div class="hero__inner container-run">
+    <p class="hero__eyebrow" data-hero="fade">
+      <span class="hero__eyebrow-dot" aria-hidden="true"></span>
+      <span>{h.eyebrow}</span>
+    </p>
+
+    <h1 class="hero__title">
+      {lines.map((l, i) => (
+        <span class:list={['hero__seg', { 'hero__seg--accent': i === lines.length - 1 && lines.length > 1 }]}>{l}</span>
+      ))}
+    </h1>
+
+    <p class="hero__sub" data-hero="fade">{phrases(h.subtitle).map((w) => (w.trim() ? <span class="phrase">{w}</span> : w))}</p>
+
+    <div class="hero__ctas" data-hero="cta">
+      <a href="#ch-08" class="btn-run btn-run--primary" data-magnetic data-dir="down">
+        <span>{h.ctaPrimary}</span>
+        <span class="btn-run__icon" aria-hidden="true">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d={down} /></svg>
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d={down} /></svg>
+        </span>
+      </a>
+      <a href="#ch-02" class="btn-run btn-run--ghost" data-magnetic data-dir="down">
+        <span>{h.ctaSecondary}</span>
+        <span class="btn-run__icon" aria-hidden="true">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d={down} /></svg>
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d={down} /></svg>
+        </span>
+      </a>
+    </div>
+  </div>
+
+  <div class="hero__foot container-run" data-hero="fade" aria-hidden="true">
+    <span class="hero__hint">
+      <span class="hero__hint-track"><i></i></span>
+      {h.scrollHint}
+    </span>
+    <span class="hero__open">{h.open}</span>
+    <span class="hero__coords">{h.coords}</span>
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    min-height: 100svh;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    padding-top: 96px;
+    overflow: clip;
+  }
+  /* 標題後方的暗幕：讓光帶經過標題時仍維持對比 */
+  .hero__scrim {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(80% 70% at 12% 62%, rgb(7 10 38 / 0.72), transparent 70%),
+      linear-gradient(0deg, rgb(7 10 38 / 0.6), transparent 26%);
+  }
+  .hero__inner {
+    position: relative;
+    align-self: center;
+    padding-block: 4vh 6vh;
+  }
+
+  .hero__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 clamp(20px, 3.2vh, 36px);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-mist-300);
+  }
+  .hero__eyebrow-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--color-lavender-100);
+    box-shadow: 0 0 10px var(--color-lavender-100), 0 0 22px rgb(77 71 254 / 0.9);
+  }
+
+  .hero__title {
+    margin: 0;
+    max-width: 15em;
+    font-family: 'Noto Sans TC', var(--font-display);
+    font-weight: 700;
+    font-size: clamp(2.6rem, 6.6vw, 7.4rem);
+    line-height: 1.12;
+    letter-spacing: -0.035em;
+    color: var(--color-snow-50);
+    font-feature-settings: 'palt';
+    text-wrap: nowrap;
+  }
+  .hero__seg {
+    display: inline-block;
+  }
+  /* 第一段自成一行 */
+  .hero__seg:first-child {
+    display: block;
+  }
+  .hero__seg--accent {
+    background: linear-gradient(100deg, #f6fbfc 0%, #decffe 40%, #8fd8ff 80%, #19acfe 110%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  /* SplitText 拆字時，每個字自帶一段漸層位置 */
+  .hero__seg--accent :global(.hero-char) {
+    background-image: linear-gradient(100deg, #f6fbfc 0%, #decffe 40%, #8fd8ff 80%, #19acfe 110%);
+    background-size: var(--seg-w, 100%) 100%;
+    background-position: calc(var(--char-x, 0px) * -1) 0;
+    background-repeat: no-repeat;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .hero__sub {
+    max-width: 33em;
+    margin: clamp(22px, 3.4vh, 36px) 0 0;
+    font-size: clamp(1rem, 1.25vw, 1.2rem);
+    line-height: 1.75;
+    color: var(--color-mist-300);
+    text-wrap: pretty;
+  }
+
+  .hero__ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: clamp(28px, 4.4vh, 44px);
+  }
+
+  .hero__foot {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    padding-bottom: 28px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-mist-500);
+  }
+  .hero__hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--color-mist-300);
+  }
+  .hero__hint-track {
+    position: relative;
+    width: 1px;
+    height: 34px;
+    background: rgb(255 255 255 / 0.16);
+    overflow: hidden;
+  }
+  .hero__hint-track i {
+    position: absolute;
+    left: -1.5px;
+    top: 0;
+    width: 4px;
+    height: 10px;
+    border-radius: 2px;
+    background: var(--color-lavender-100);
+    box-shadow: 0 0 8px var(--color-lavender-100);
+    animation: hint 2.2s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+  }
+  @keyframes hint {
+    0% { translate: 0 -12px; }
+    60%, 100% { translate: 0 36px; }
+  }
+  .hero__open {
+    margin-left: auto;
+  }
+
+  @media (max-width: 899px) {
+    .hero {
+      padding-top: 0;
+    }
+    .hero__inner {
+      align-self: end;
+      /* 底部留給 HUD 膠囊 */
+      padding-block: 31svh calc(78px + env(safe-area-inset-bottom));
+    }
+    .hero__title {
+      font-size: clamp(2.5rem, 12.4vw, 4.4rem);
+      line-height: 1.14;
+      letter-spacing: -0.03em;
+      text-wrap: wrap;
+    }
+    .hero__scrim {
+      background:
+        linear-gradient(180deg, transparent 20%, rgb(7 10 38 / 0.75) 48%, rgb(7 10 38 / 0.9) 100%);
+    }
+    .hero__sub {
+      font-size: 15.5px;
+      line-height: 1.75;
+    }
+    .hero__ctas {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 10px;
+    }
+    .hero__ctas .btn-run {
+      justify-content: space-between;
+    }
+    .hero__foot {
+      padding-bottom: calc(76px + env(safe-area-inset-bottom));
+    }
+    .hero__foot {
+      display: none;
+    }
+    .hero__eyebrow {
+      font-size: 10.5px;
+      letter-spacing: 0.08em;
+      margin-bottom: 18px;
+    }
+  }
+  @media (max-width: 899px) and (max-height: 700px) {
+    .hero__inner {
+      padding-top: 26svh;
+    }
+  }
+
+  /* 進場前的狀態（只有首訪、開場進行中才會加上） */
+  :global(html.boot-on) .hero [data-hero] {
+    opacity: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero__hint-track i { animation: none; translate: 0 12px; }
+  }
+</style>
+
+<script>
+  import { initHero } from './scene';
+  initHero();
+</script>

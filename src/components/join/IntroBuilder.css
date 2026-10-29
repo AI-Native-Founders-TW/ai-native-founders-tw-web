@@ -1,0 +1,387 @@
+.ib {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(2rem, 4vw, 3.5rem);
+  align-items: start;
+}
+@media (min-width: 1024px) {
+  .ib {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.02fr);
+  }
+  .ib-side {
+    position: sticky;
+    top: 5.5rem;
+  }
+}
+.ib-side,
+.ib-form {
+  min-width: 0;
+}
+
+/* ── 表單 ── */
+.ib-form {
+  display: grid;
+  gap: 1.25rem;
+}
+.ib-group {
+  min-width: 0;
+  min-inline-size: 0;
+  border: 0;
+  margin: 0;
+  padding: clamp(1.4rem, 2.5vw, 2rem);
+  border-radius: 20px;
+  background: rgb(13 18 60 / 0.45);
+  box-shadow: inset 0 0 0 1px rgb(184 192 224 / 0.1);
+  display: grid;
+  gap: 1.5rem;
+}
+.ib-legend {
+  float: left;
+  width: 100%;
+  display: flex;
+  align-items: baseline;
+  gap: 0.85rem;
+  font-family: "Noto Sans TC", var(--font-display);
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: var(--color-snow-50);
+}
+.ib-legend + * {
+  clear: both;
+}
+.ib-legend-no {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 400;
+  color: var(--color-lavender-300);
+  letter-spacing: 0.1em;
+}
+.ib-note {
+  margin: -0.5rem 0 0;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  font-size: 0.88rem;
+  line-height: 1.7;
+  color: var(--color-lavender-100);
+  background: rgb(106 43 217 / 0.12);
+  box-shadow: inset 0 0 0 1px rgb(206 171 253 / 0.18);
+}
+.ib-field {
+  display: grid;
+  gap: 0.5rem;
+}
+.ib-label {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 600;
+  font-size: 0.98rem;
+  color: var(--color-snow-50);
+}
+.ib-label-no {
+  display: inline-grid;
+  place-items: center;
+  width: 1.65rem;
+  height: 1.65rem;
+  flex: none;
+  border-radius: 50%;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  font-weight: 400;
+  color: var(--color-mist-300);
+  box-shadow: inset 0 0 0 1px rgb(184 192 224 / 0.25);
+  transition:
+    background 0.4s var(--ease-run),
+    color 0.4s,
+    box-shadow 0.4s;
+}
+.ib-field[data-filled] .ib-label-no {
+  color: var(--color-snow-50);
+  background: var(--gradient-brand);
+  box-shadow: 0 0 14px rgb(25 172 254 / 0.45);
+  font-size: 0.78rem;
+}
+.ib-optional {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  color: var(--color-mist-500);
+  text-transform: uppercase;
+}
+.ib-hint {
+  margin: 0;
+  font-size: 0.84rem;
+  line-height: 1.65;
+  color: var(--color-mist-500);
+}
+.ib-hint--center {
+  text-align: center;
+}
+.ib-input {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border-radius: 12px;
+  border: 0;
+  font: inherit;
+  font-size: 0.98rem;
+  line-height: 1.7;
+  color: var(--color-snow-50);
+  background: rgb(7 10 38 / 0.7);
+  box-shadow: inset 0 0 0 1px rgb(184 192 224 / 0.16);
+  transition:
+    box-shadow 0.25s,
+    background 0.25s;
+}
+.ib-input::placeholder {
+  color: rgb(125 135 181 / 0.65);
+}
+.ib-input:hover {
+  box-shadow: inset 0 0 0 1px rgb(184 192 224 / 0.3);
+}
+.ib-input:focus {
+  outline: none;
+  background: rgb(7 10 38 / 0.95);
+  box-shadow:
+    inset 0 0 0 1px rgb(25 172 254 / 0.75),
+    0 0 0 4px rgb(25 172 254 / 0.12);
+}
+.ib-textarea {
+  resize: vertical;
+  min-height: 5.5rem;
+  field-sizing: content;
+  max-height: 22rem;
+}
+
+/* ── 預覽 ── */
+.ib-preview {
+  position: relative;
+  border-radius: 18px;
+  border: 1px solid transparent;
+  background:
+    linear-gradient(180deg, rgb(13 18 64 / 0.96), rgb(8 11 42 / 0.97)) padding-box,
+    linear-gradient(
+      140deg,
+      rgb(206 171 253 / 0.5),
+      rgb(30 71 243 / 0.18) 40%,
+      rgb(25 172 254 / 0.45)
+    )
+    border-box;
+  box-shadow:
+    0 50px 120px -50px rgb(0 0 0 / 0.9),
+    0 0 80px -30px rgb(77 71 254 / 0.45);
+  overflow: hidden;
+}
+.ib-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  height: 2.9rem;
+  padding-inline: 1.1rem;
+  border-bottom: 1px solid rgb(184 192 224 / 0.1);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--color-snow-50);
+}
+.ib-dots {
+  display: inline-flex;
+  gap: 0.35rem;
+}
+.ib-dots i {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: rgb(184 192 224 / 0.2);
+}
+.ib-dots i:first-child {
+  background: radial-gradient(circle at 35% 30%, #f6fbfc, #decffe 55%, #9d93f6);
+  box-shadow: 0 0 8px rgb(222 207 254 / 0.7);
+}
+.ib-path {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ib-path-dim {
+  color: var(--color-mist-500);
+}
+.ib-badge {
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  color: var(--color-sky-200);
+  background: rgb(25 172 254 / 0.1);
+  box-shadow: inset 0 0 0 1px rgb(25 172 254 / 0.32);
+}
+.ib-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.7rem 1.1rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--color-mist-300);
+  border-bottom: 1px solid rgb(184 192 224 / 0.08);
+}
+.ib-progress-track {
+  flex: 1;
+  height: 3px;
+  border-radius: 3px;
+  background: rgb(184 192 224 / 0.12);
+  overflow: hidden;
+}
+.ib-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6a2bd9, #1e47f3, #19acfe);
+  box-shadow: 0 0 10px rgb(25 172 254 / 0.8);
+  transition: width 0.6s var(--ease-run);
+}
+.ib-code {
+  margin: 0;
+  max-height: min(44vh, 30rem);
+  overflow: auto;
+  padding: 1rem 0;
+  font-family: var(--font-mono), "Noto Sans TC", monospace;
+  font-size: 0.8rem;
+  line-height: 1.75;
+  color: var(--color-mist-300);
+  scrollbar-width: thin;
+  scrollbar-color: rgb(184 192 224 / 0.2) transparent;
+}
+.ib-code code {
+  display: block;
+  min-width: max-content;
+}
+.ib-md-line {
+  display: grid;
+  grid-template-columns: 3rem 1fr;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.ib-md-no {
+  padding-right: 1rem;
+  text-align: right;
+  color: rgb(125 135 181 / 0.45);
+  user-select: none;
+}
+.ib-md-text {
+  padding-right: 1.25rem;
+  max-width: 34rem;
+}
+.ib-md-h {
+  color: var(--color-snow-50);
+  font-weight: 600;
+}
+.ib-md-h1 .ib-md-text {
+  color: var(--color-lavender-100);
+}
+.ib-md-h2 .ib-md-text {
+  color: var(--color-sky-200);
+}
+.ib-md-ph .ib-md-text {
+  color: rgb(125 135 181 / 0.7);
+  font-style: italic;
+}
+.ib-md-meta .ib-md-text {
+  color: var(--color-lavender-300);
+}
+.ib-md-li .ib-md-text {
+  color: var(--color-snow-50);
+}
+.ib-tools {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid rgb(184 192 224 / 0.1);
+}
+.ib-tool {
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-snow-50);
+  background: rgb(255 255 255 / 0.05);
+  box-shadow: inset 0 0 0 1px rgb(184 192 224 / 0.2);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.ib-tool:hover {
+  background: rgb(255 255 255 / 0.1);
+}
+.ib-tool--dim {
+  color: var(--color-mist-300);
+  margin-left: auto;
+}
+
+/* ── 送出 ── */
+.ib-submit {
+  margin-top: 1.25rem;
+  display: grid;
+  gap: 0.9rem;
+}
+.ib-review {
+  display: flex;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 1rem 1.1rem;
+  border-radius: 14px;
+  font-size: 0.88rem;
+  line-height: 1.7;
+  color: var(--color-snow-50);
+  background: linear-gradient(135deg, rgb(56 12 116 / 0.35), rgb(30 71 243 / 0.15));
+  box-shadow: inset 0 0 0 1px rgb(206 171 253 / 0.28);
+}
+.ib-review-icon {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 50%;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-night-950);
+  background: var(--color-lavender-300);
+}
+.ib-missing {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--color-mist-300);
+}
+.ib-confirm {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--color-snow-50);
+  cursor: pointer;
+}
+.ib-confirm input {
+  flex: none;
+  width: 1.15rem;
+  height: 1.15rem;
+  margin-top: 0.2rem;
+  accent-color: var(--color-sky-400);
+}
+.ib-confirm:has(input:disabled) {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.ib-go {
+  width: 100%;
+  min-height: 3.6rem;
+  font-size: 1.02rem;
+}
+.ib-warn {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--color-lavender-100);
+}
+.ib-guide {
+  justify-self: center;
+  font-size: 0.85rem;
+}

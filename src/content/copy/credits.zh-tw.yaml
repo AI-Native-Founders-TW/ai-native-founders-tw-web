@@ -1,0 +1,61 @@
+# /credits 頁文案（zh-TW）。名單本身全部自動產生（git、mono 資訊貢獻者、src/content/credits.yml），不在這裡手動維護。
+
+meta:
+  title: Credits · AI-Native Global Founders Speedrun Taiwan
+  description: 網站製作、組織文件資訊貢獻者與社群貢獻者。名單從 git 紀錄、mono 文件與 credits.yml 自動產生。
+
+hero:
+  kicker: Credits · 工作人員名單
+  title: 每個人做的事，
+  titleAccent: 都應該被看見。
+  body: 這份名單不是手動維護的。程式貢獻來自 git 紀錄，組織文件的署名來自 mono 各文件的「資訊貢獻者」，設計、文案等 git 看不到的貢獻則寫在 credits.yml。
+  stats:
+    people: 位貢獻者
+    contributions: 筆貢獻
+    documents: 份署名文件
+  source: 資料來源
+  generated: 產生於
+  fallback: 目前讀不到 mono，以下是暫時的資料。
+
+sections:
+  website:
+    kicker: Layer 01
+    title: 網站製作
+    body: Owner、Collab 與各角色，以及這個網站 repo 的 commit 作者。
+  org:
+    kicker: Layer 02
+    title: 組織文件資訊貢獻者
+    body: mono 各文件末尾列名的資訊、經歷與見解貢獻者（憲法第 10 條）。
+    people: 依人
+    docs: 依文件
+    docCount: 份文件
+  community:
+    kicker: Layer 03
+    title: 社群
+    body: mono 的 commit 作者，以及已合併的自介。
+    introsTitle: 自介
+    introsEmpty: 還沒有已合併的自介。你可以是第一位。
+    introsCta: 提交自介
+    commitsTitle: mono commit 作者
+
+labels:
+  commits: commits
+  commit: commit
+  tool: AI 工具
+  intro: 自介
+  roles: 會議分工
+  viewDoc: 在 GitHub 看文件
+  viewIntro: 看自介
+
+howto:
+  title: 怎麼把自己加進來
+  items:
+    - k: 寫程式
+      v: commit 進本 repo 或 mono，下次建置自動出現。
+    - k: 設計、文案、討論
+      v: 在 PR 裡順手把自己加進 src/content/credits.yml 的 website.roles。
+    - k: 頭像
+      v: 在 credits.yml 填上你的 GitHub 帳號，就會換成 GitHub 頭像。
+    - k: 名字對不上
+      v: 同一個人有不同稱呼時，在 credits.yml 的 aliases 合併。
+  cta: 編輯 credits.yml

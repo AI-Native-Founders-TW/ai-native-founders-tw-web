@@ -1,0 +1,78 @@
+# 網站的非程式貢獻與身分合併。
+#
+# 程式貢獻（git commit）、組織文件的資訊貢獻者、自介都會自動算進 /credits，不必寫在這裡。
+# 這份檔案只補兩件 git 看不到的事：
+#   1. people：同一個人在不同地方的稱呼（別名）與 GitHub 帳號，用來合併成同一人。
+#   2. website.roles：設計、文案、討論等不會出現在 git 紀錄的貢獻。
+# 你修了文案或設計，在 PR 裡順手把自己加進對應的 role 即可。
+#
+# 規則：
+# - GitHub 帳號請本人提供；不知道就留空，不要猜。
+# - emails 只填本人確認過、用來 commit 的 email（讓 git 作者合併到這個人）。
+# - 出處：Owner／Collab／Logo 為 2026-10-24 Discord 水球公布；A5、A12、A13 為第一次核心會議行動表。
+
+people:
+  - key: ray
+    name: Ray 貓
+    aliases: [Ray, Ray貓, Ray 貓]
+    github: # 待本人提供
+    # emails: []  # 本 repo 目前的 commit 作者是「Wu RuiCheng」，若是本人請填入 commit email 以合併
+  - key: kun
+    name: Kun
+    aliases: [kun]
+    github: # 待本人提供
+  - key: sun
+    name: Sun
+    github: # 待本人提供
+  - key: yayapipi
+    name: yayapipi
+    aliases: [Yapi, yayapipi]
+    github: # 待本人提供
+  - key: pinyi
+    name: 品毅
+    github: # 待本人提供
+  - key: chris
+    name: 有平
+    aliases: [Chris]
+    github: # 待本人提供
+  - key: waterball
+    name: 水球
+    aliases: [水球潘]
+    github: # 待本人提供（mono 的 commit 作者「Johnny Pan」若是本人，請在 emails 填入以合併）
+  - key: jasmine
+    name: Jasmine
+    github: # 待本人提供
+  - key: claude
+    name: Claude
+    kind: tool
+
+website:
+  roles:
+    - label: Owner
+      labelEn: Owner
+      kind: lead
+      people: [ray]
+      source: Discord 2026-10-24
+    - label: Collab
+      labelEn: Collab
+      kind: lead
+      people: [kun, sun, yayapipi]
+      source: Discord 2026-10-24
+    - label: Logo
+      labelEn: Logo
+      kind: design
+      people: [sun]
+      source: Discord 2026-10-24
+    - label: 文案初稿（依會議逐字稿起草）
+      labelEn: First draft of the copy (from the meeting transcript)
+      kind: copy
+      people: [ray]
+    - label: 文案協作
+      labelEn: Copy collaboration
+      kind: copy
+      people: [pinyi]
+      source: A13
+    - label: AI 協作工具
+      labelEn: AI collaboration tool
+      kind: tool
+      people: [claude]

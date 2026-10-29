@@ -1,0 +1,657 @@
+---
+// 章節 02：一次就夠（coffee chat → 開源筆記 → 上百個光點）
+// 固定場景＋捲動控制。沒有 JS／減少動態時，顯示完整的靜態圖文版。
+import type { Copy } from '../../../i18n/copy';
+import { buildField, phrases, splitStat } from './field';
+
+interface Props {
+  copy: Copy;
+}
+const { copy } = Astro.props;
+const c = copy.coffeeChat;
+const questions: string[] = c.bubbles;
+const field = buildField(questions.length);
+const dupCount = (k: number) => field.filter((b) => b.k === k).length;
+const stat = splitStat(c.stat);
+---
+
+<section
+  id="ch-02"
+  data-split="02"
+  data-split-name={copy.hud.splits['02']}
+  class="cc relative"
+  aria-labelledby="cc-title"
+>
+  <div class="cc-wrap">
+    <div class="cc-stage">
+      <div class="cc-bg" aria-hidden="true"></div>
+      <canvas class="cc-sparks" aria-hidden="true"></canvas>
+
+      <!-- 重複的問題泡泡（裝飾；不重複的版本在筆記卡裡） -->
+      <div class="cc-cloud" aria-hidden="true">
+        {
+          field.map((b, i) => (
+            <div
+              class:list={['cc-bubble', `d${b.d}`, b.me && 'is-me', b.extra && 'is-extra', i >= questions.length && 'is-dup']}
+              data-k={b.k}
+              style={`--g:${b.g}`}
+            >
+              <span class="cc-av">{b.initial}</span>
+              <span class="cc-q">{questions[b.k]}</span>
+              {b.d === 2 && <span class="cc-time">{b.time}</span>}
+            </div>
+          ))
+        }
+      </div>
+
+      <div class="cc-counter" aria-hidden="true">
+        <span class="cc-counter-label">SAME&nbsp;QUESTION</span>
+        <span class="cc-counter-x">×</span><span class="cc-counter-n">001</span>
+      </div>
+
+      <div class="cc-halo" aria-hidden="true"></div>
+
+      <!-- 開源筆記：唯一一份 -->
+      <article class="cc-note" aria-label={c.note}>
+        <div class="cc-note-ring" aria-hidden="true"></div>
+        <div class="cc-note-inner">
+          <header class="cc-note-head">
+            <span class="cc-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span class="cc-file" aria-hidden="true">notes/coffee-chat.md</span>
+            <span class="cc-badge" aria-hidden="true">OPEN&nbsp;SOURCE</span>
+          </header>
+          <h3 class="cc-note-title">{c.note}</h3>
+          <ol class="cc-lines">
+            {
+              questions.map((q, k) => (
+                <li class="cc-line" data-k={k}>
+                  <span class="cc-hash" aria-hidden="true">
+                    ##
+                  </span>
+                  <span class="cc-line-q">{q}</span>
+                  <span class="cc-dup" aria-hidden="true">
+                    ×<b>{dupCount(k)}</b>
+                  </span>
+                </li>
+              ))
+            }
+          </ol>
+          <div class="cc-sweep" aria-hidden="true"></div>
+        </div>
+      </article>
+
+      <p class="cc-stat">
+        {
+          stat ? (
+            <>
+              <span class="cc-stat-a">{stat[0]}</span>
+              <span class="cc-stat-l">{stat[1]}</span>
+              <span class="cc-stat-arrow" aria-hidden="true">
+                <svg viewBox="0 0 64 12" preserveAspectRatio="none">
+                  <path d="M1 6 H62 M55 1 L62 6 L55 11" pathLength="1" />
+                </svg>
+              </span>
+              <span class="sr-only">→</span>
+              <span class="cc-stat-b">{stat[2]}</span>
+              <span class="cc-stat-l">{stat[3]}</span>
+            </>
+          ) : (
+            c.stat
+          )
+        }
+      </p>
+
+      <div class="cc-copy">
+        <p class="cc-kicker">{c.kicker}</p>
+        <h2 id="cc-title" class="cc-title">
+          {phrases(c.title).map((ph) => (
+            <span class="cc-ph">
+              <span class="cc-ph-in">{ph}</span>
+            </span>
+          ))}
+        </h2>
+        <p class="cc-body">{c.body}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { onReady } from '../../engine';
+
+  onReady(async (s) => {
+    const root = document.getElementById('ch-02');
+    if (!root || s.reduced) return;
+    const { initCoffeeChat } = await import('./scene');
+    initCoffeeChat(root, s);
+  });
+</script>
+
+<style>
+  /* ───────── 共用外觀 ───────── */
+  .cc {
+    --cc-pad: clamp(1.25rem, 6vw, 7rem);
+    background: var(--color-night-950);
+    isolation: isolate;
+  }
+  .cc-stage {
+    position: relative;
+    padding: clamp(5rem, 12vh, 9rem) var(--cc-pad);
+    display: grid;
+    gap: 2.5rem;
+    grid-template-columns: minmax(0, 1fr);
+    overflow: clip;
+  }
+  .cc-bg {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+      radial-gradient(60% 50% at 70% 45%, rgb(30 71 243 / 0.14), transparent 70%),
+      radial-gradient(40% 40% at 15% 80%, rgb(56 12 116 / 0.22), transparent 70%);
+  }
+  .cc-sparks,
+  .cc-halo,
+  .cc-counter {
+    display: none;
+  }
+
+  .cc-kicker {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-sky-400);
+    margin-bottom: 1.25rem;
+  }
+  .cc-title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(2rem, 4.4vw, 4.25rem);
+    line-height: 1.14;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+  .cc-ph {
+    display: inline-block;
+    white-space: nowrap;
+    overflow: clip;
+    overflow-clip-margin: 0.1em;
+    padding-bottom: 0.06em;
+    vertical-align: top;
+  }
+  .cc-ph-in {
+    display: inline-block;
+    will-change: transform;
+  }
+  .cc-body {
+    margin-top: 1.5rem;
+    max-width: 32rem;
+    color: var(--color-mist-300);
+    font-size: clamp(1rem, 1.15vw, 1.125rem);
+    line-height: 1.85;
+  }
+
+  /* 泡泡 */
+  .cc-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+  .cc-bubble {
+    --g: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.5rem 0.95rem 0.5rem 0.5rem;
+    border-radius: 1.25rem 1.25rem 1.25rem 0.35rem;
+    background: rgb(17 24 73 / 0.78);
+    border: 1px solid rgb(184 192 224 / 0.14);
+    color: var(--color-mist-300);
+    font-size: 0.9375rem;
+    line-height: 1.3;
+    white-space: nowrap;
+    box-shadow: 0 14px 30px -14px rgb(0 0 0 / 0.7);
+  }
+  .cc-bubble.is-me {
+    border-radius: 1.25rem 1.25rem 0.35rem 1.25rem;
+    background: linear-gradient(135deg, rgb(30 71 243 / 0.9), rgb(77 71 254 / 0.8));
+    border-color: rgb(143 216 255 / 0.25);
+    color: var(--color-snow-50);
+  }
+  .cc-av {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 1.6em;
+    height: 1.6em;
+    border-radius: 999px;
+    font: 600 0.72em/1 var(--font-mono);
+    color: var(--color-night-950);
+    background: linear-gradient(
+      135deg,
+      hsl(calc(250 - var(--g) * 22) 95% 82%),
+      hsl(calc(215 - var(--g) * 10) 98% 62%)
+    );
+  }
+  .cc-time {
+    font: 0.65rem/1 var(--font-mono);
+    color: var(--color-mist-500);
+    margin-left: 0.15rem;
+  }
+  .is-me .cc-time {
+    color: rgb(222 207 254 / 0.8);
+  }
+  .cc:not(.is-live) .cc-bubble.is-dup {
+    display: none;
+  }
+
+  /* 筆記卡 */
+  .cc-note {
+    position: relative;
+    width: min(100%, 27rem);
+    border-radius: 1.25rem;
+    padding: 1px;
+    background: linear-gradient(
+      140deg,
+      rgb(206 171 253 / 0.55),
+      rgb(30 71 243 / 0.25) 45%,
+      rgb(25 172 254 / 0.55)
+    );
+    box-shadow:
+      0 40px 80px -30px rgb(0 0 0 / 0.85),
+      0 0 0 1px rgb(255 255 255 / 0.02);
+  }
+  .cc-note-ring {
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    opacity: 0;
+    padding: 2px;
+    background: conic-gradient(
+      from var(--cc-angle, 0deg),
+      transparent 0 55%,
+      #19acfe 72%,
+      #decffe 84%,
+      transparent 96%
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#000 0 0) content-box exclude,
+      linear-gradient(#000 0 0);
+    pointer-events: none;
+  }
+  .cc-note-inner {
+    position: relative;
+    overflow: hidden;
+    border-radius: calc(1.25rem - 1px);
+    background: linear-gradient(180deg, #10174a 0%, #0b0f38 100%);
+    padding: 1rem 1.25rem 1.1rem;
+  }
+  .cc-note-head {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-bottom: 0.85rem;
+    border-bottom: 1px solid rgb(184 192 224 / 0.12);
+    font: 0.7rem/1 var(--font-mono);
+    color: var(--color-mist-500);
+  }
+  .cc-dots {
+    display: inline-flex;
+    gap: 0.3rem;
+  }
+  .cc-dots i {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 999px;
+    background: rgb(184 192 224 / 0.22);
+  }
+  .cc-badge {
+    margin-left: auto;
+    padding: 0.3rem 0.5rem;
+    border-radius: 999px;
+    color: var(--color-lavender-100);
+    background: rgb(77 71 254 / 0.22);
+    border: 1px solid rgb(206 171 253 / 0.3);
+    letter-spacing: 0.08em;
+    font-size: 0.62rem;
+  }
+  .cc-note-title {
+    margin: 1rem 0 0.5rem;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.35rem;
+    letter-spacing: -0.01em;
+    color: var(--color-snow-50);
+  }
+  .cc-lines {
+    display: grid;
+  }
+  .cc-line {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    padding: 0.42rem 0;
+    font-size: 0.9375rem;
+    color: var(--color-mist-300);
+    border-bottom: 1px dashed rgb(184 192 224 / 0.09);
+  }
+  .cc-line:last-child {
+    border-bottom: 0;
+  }
+  .cc-hash {
+    font: 600 0.72rem/1 var(--font-mono);
+    color: var(--color-iris-500);
+  }
+  .cc-line-q {
+    flex: 1;
+    min-width: 0;
+  }
+  .cc-dup {
+    font: 0.7rem/1 var(--font-mono);
+    color: var(--color-sky-400);
+    font-variant-numeric: tabular-nums;
+  }
+  .cc-sweep {
+    position: absolute;
+    inset: -20% -60%;
+    background: linear-gradient(
+      100deg,
+      transparent 40%,
+      rgb(222 207 254 / 0.14) 47%,
+      rgb(143 216 255 / 0.3) 50%,
+      transparent 58%
+    );
+    transform: translateX(-60%);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* 1 次交流 → N 位創業者 */
+  .cc-stat {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.6rem;
+    font-family: var(--font-display);
+    color: var(--color-snow-50);
+  }
+  .cc-stat-a,
+  .cc-stat-b {
+    font-weight: 800;
+    font-size: clamp(2.75rem, 5vw, 4.5rem);
+    line-height: 1;
+    letter-spacing: -0.03em;
+  }
+  .cc-stat-b {
+    background: var(--gradient-text);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    padding-right: 0.06em;
+  }
+  .cc-stat-l {
+    font-weight: 600;
+    font-size: clamp(1rem, 1.4vw, 1.25rem);
+    color: var(--color-mist-300);
+  }
+  .cc-stat-arrow {
+    align-self: center;
+    width: clamp(3rem, 6vw, 5rem);
+    height: 0.9rem;
+  }
+  .cc-stat-arrow svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .cc-stat-arrow path {
+    fill: none;
+    stroke: var(--color-sky-400);
+    stroke-width: 1.5;
+    vector-effect: non-scaling-stroke;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 1;
+    stroke-dashoffset: var(--draw, 0);
+  }
+
+  /* 靜態版（無 JS／減少動態）的版面 */
+  @media (min-width: 900px) {
+    .cc:not(.is-live) .cc-stage {
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+      grid-template-areas:
+        'copy note'
+        'cloud note'
+        'stat note';
+      column-gap: clamp(2rem, 6vw, 6rem);
+      align-items: start;
+    }
+    .cc:not(.is-live) .cc-copy {
+      grid-area: copy;
+    }
+    .cc:not(.is-live) .cc-cloud {
+      grid-area: cloud;
+    }
+    .cc:not(.is-live) .cc-note {
+      grid-area: note;
+      justify-self: end;
+    }
+    .cc:not(.is-live) .cc-stat {
+      grid-area: stat;
+    }
+  }
+  .cc:not(.is-live) .cc-copy {
+    order: -1;
+  }
+
+  /* ───────── 動態版（JS 加上 .is-live） ───────── */
+  .cc.is-live .cc-wrap {
+    height: 480vh;
+  }
+  .cc.is-live .cc-stage {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    height: 100svh;
+    padding: 0;
+    display: block;
+  }
+  .cc.is-live .cc-sparks {
+    display: block;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 3;
+    pointer-events: none;
+  }
+  .cc.is-live .cc-cloud {
+    position: absolute;
+    inset: 0;
+    display: block;
+    z-index: 2;
+    pointer-events: none;
+  }
+  .cc.is-live .cc-bubble {
+    position: absolute;
+    left: 0;
+    top: 0;
+    opacity: 0;
+    will-change: transform, opacity;
+    transform-origin: 50% 50%;
+  }
+  .cc.is-live .cc-bubble.d0 {
+    filter: blur(2.2px);
+    font-size: 0.8rem;
+  }
+  .cc.is-live .cc-bubble.d1 {
+    filter: blur(0.5px);
+  }
+  .cc.is-live .cc-bubble.d2 {
+    font-size: 1.0625rem;
+  }
+  :global(html[data-quality='low']) .cc.is-live .cc-bubble {
+    filter: none !important;
+  }
+  .cc.is-live .cc-counter {
+    display: flex;
+    align-items: baseline;
+    gap: 0.3rem;
+    position: absolute;
+    left: var(--cc-pad);
+    bottom: clamp(1.5rem, 6vh, 3.5rem);
+    z-index: 5;
+    font-family: var(--font-mono);
+    color: var(--color-mist-300);
+    will-change: opacity;
+  }
+  .cc-counter-label {
+    font-size: 0.66rem;
+    letter-spacing: 0.22em;
+    color: var(--color-mist-500);
+    margin-right: 0.6rem;
+  }
+  .cc-counter-x {
+    font-size: 1.25rem;
+    color: var(--color-sky-400);
+  }
+  .cc-counter-n {
+    font-size: clamp(1.75rem, 3vw, 2.5rem);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-snow-50);
+  }
+  .cc.is-live .cc-halo {
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 80vmax;
+    height: 80vmax;
+    margin: -40vmax 0 0 -40vmax;
+    border-radius: 50%;
+    z-index: 1;
+    opacity: 0;
+    pointer-events: none;
+    background: radial-gradient(
+      closest-side,
+      rgb(143 216 255 / 0.32),
+      rgb(77 71 254 / 0.16) 38%,
+      rgb(56 12 116 / 0.08) 60%,
+      transparent 75%
+    );
+    will-change: transform, opacity;
+  }
+  .cc.is-live .cc-note {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 4;
+    opacity: 0;
+    will-change: transform, opacity;
+  }
+  .cc.is-live .cc-line {
+    opacity: 0.16;
+  }
+  .cc.is-live .cc-dup {
+    opacity: 0;
+  }
+  .cc.is-live .cc-stat {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 5;
+    margin: 0;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+  }
+  .cc.is-live .cc-stat > * {
+    opacity: 0;
+  }
+  .cc.is-live .cc-copy {
+    position: absolute;
+    z-index: 5;
+    left: var(--cc-pad);
+    top: 50%;
+    width: min(40vw, 34rem);
+    transform: translateY(-50%);
+  }
+  .cc.is-live .cc-kicker {
+    opacity: 0;
+  }
+  .cc.is-live .cc-ph-in {
+    transform: translateY(110%);
+  }
+  .cc.is-live .cc-body {
+    opacity: 0;
+  }
+  .cc.is-live .cc-copy::before {
+    /* 讓文字在光點上仍可讀 */
+    content: '';
+    position: absolute;
+    inset: -35% -30% -35% -45%;
+    z-index: -1;
+    background: radial-gradient(closest-side, rgb(7 10 38 / 0.9), rgb(7 10 38 / 0.65) 55%, transparent);
+    opacity: var(--scrim, 0);
+    pointer-events: none;
+  }
+
+  @media (max-width: 767px) {
+    .cc.is-live .cc-wrap {
+      height: 420vh;
+    }
+    .cc.is-live .cc-bubble.is-extra {
+      display: none;
+    }
+    .cc.is-live .cc-bubble {
+      font-size: 0.8125rem;
+    }
+    .cc.is-live .cc-bubble.d0 {
+      font-size: 0.7rem;
+    }
+    .cc.is-live .cc-bubble.d2 {
+      font-size: 0.9rem;
+    }
+    .cc.is-live .cc-copy {
+      top: auto;
+      bottom: calc(6.25rem + env(safe-area-inset-bottom));
+      width: auto;
+      right: var(--cc-pad);
+      transform: none;
+    }
+    .cc.is-live .cc-title {
+      font-size: 1.75rem;
+    }
+    .cc.is-live .cc-body {
+      margin-top: 0.85rem;
+      font-size: 0.9375rem;
+      line-height: 1.75;
+    }
+    .cc.is-live .cc-kicker {
+      margin-bottom: 0.75rem;
+    }
+    .cc.is-live .cc-counter {
+      bottom: auto;
+      top: 5.5rem;
+    }
+    .cc.is-live .cc-note {
+      width: min(86vw, 22rem);
+    }
+    .cc.is-live .cc-stat-a,
+    .cc.is-live .cc-stat-b {
+      font-size: 2.25rem;
+    }
+    .cc.is-live .cc-stat-l {
+      font-size: 0.95rem;
+    }
+    .cc.is-live .cc-stat-arrow {
+      width: 2.5rem;
+    }
+  }
+</style>
