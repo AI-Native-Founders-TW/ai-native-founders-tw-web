@@ -1,4 +1,4 @@
-# aifounders.tw：main 有更新就 build，發佈成 GitHub Release（固定 tag：site-build）。
+# aifounders.tw：main 有更新就 build，發佈成 GitHub Release（固定 tag：site-build）；PR 只做 build 檢查，不發佈。
 # 放在網站 repo 的 .github/workflows/release-site.yml。這份 workflow 不碰主機：
 # 主機每 5 分鐘讀 releases/latest，版本不同才下載換上（Plan 024 決策 028、032）。
 name: release-site
@@ -6,10 +6,12 @@ name: release-site
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 concurrency:
-  group: release-site
+  group: release-site-${{ github.ref }} # PR 與 main 各自排隊，PR 不會取消 main 的發佈
   cancel-in-progress: true
 
 jobs:
@@ -40,6 +42,7 @@ jobs:
           tar -C dist -czf site.tar.gz .
           sha256sum site.tar.gz > site.tar.gz.sha256
       - uses: actions/upload-artifact@v4
+        if: github.event_name != 'pull_request'
         with:
           name: site
           path: |
@@ -49,6 +52,7 @@ jobs:
 
   release:
     needs: build
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-24.04
     permissions:
       contents: write
