@@ -23,6 +23,8 @@ gsap.registerPlugin(ScrollTrigger, SplitText);
 
 export { gsap, ScrollTrigger, SplitText };
 
+const SCROLL_KEY = 'anf:scroll';
+
 export type Quality = 'high' | 'mid' | 'low';
 export interface EngineState {
   quality: Quality;
@@ -92,9 +94,47 @@ function init(): Promise<EngineState> {
     });
     // 字型載入後版面會變，重新計算所有 ScrollTrigger
     document.fonts?.ready.then(() => ScrollTrigger.refresh());
+    restoreScroll();
     return state;
   })();
   return ready;
+}
+
+/**
+ * 頁面回復：章節的動畫版面要等 JS 才撐開，瀏覽器自己還原捲動時頁面還是短的，會落在錯的位置。
+ * 改由引擎記下位置，等版面穩定後再回去；「跳過 run」則對準網址上的錨點（終點線）。
+ */
+function restoreScroll() {
+  history.scrollRestoration = 'manual';
+  window.addEventListener('pagehide', () => {
+    sessionStorage.setItem(SCROLL_KEY, String(window.scrollY));
+  });
+  const nav = performance.getEntriesByType('navigation')[0] as
+    | PerformanceNavigationTiming
+    | undefined;
+  const skipped = sessionStorage.getItem('anf:skip-run') === '1';
+  const saved = Number(sessionStorage.getItem(SCROLL_KEY));
+  const revisit = nav?.type === 'reload' || nav?.type === 'back_forward';
+  let touched = false;
+  const stop = () => {
+    touched = true;
+  };
+  window.addEventListener('wheel', stop, { once: true, passive: true });
+  window.addEventListener('touchstart', stop, { once: true, passive: true });
+  const go = () => {
+    if (touched) return;
+    ScrollTrigger.refresh();
+    if (skipped && location.hash) {
+      document.querySelector(location.hash)?.scrollIntoView();
+    } else if (revisit && saved > 0) {
+      state.lenis?.scrollTo(saved, { immediate: true, force: true });
+      window.scrollTo(0, saved);
+    }
+  };
+  // 各章節以動態載入補上版面，等它們就位
+  const settle = () => setTimeout(go, 450);
+  if (document.readyState === 'complete') settle();
+  else window.addEventListener('load', settle, { once: true });
 }
 
 /**
@@ -156,6 +196,7 @@ export function resumeRun() {
   sessionStorage.removeItem('anf:skip-run');
   sessionStorage.removeItem('anf:booted');
   location.hash = '';
+  window.scrollTo(0, 0);
   location.reload();
 }
 

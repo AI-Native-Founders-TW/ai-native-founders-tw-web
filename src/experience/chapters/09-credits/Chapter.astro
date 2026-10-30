@@ -10,7 +10,10 @@ interface Props {
 const { copy } = Astro.props;
 const cr = copy.credits;
 
-let groups: CreditGroup[] = (await getCreditGroups()).filter((g) => g.people.length > 0);
+// 網站製作名單不放在片尾：人數增加時長度會爆炸，完整名單在 /credits
+let groups: CreditGroup[] = (await getCreditGroups()).filter(
+  (g) => g.key !== 'website' && g.people.length > 0,
+);
 
 // 開發用：CREDITS_STRESS=120 pnpm dev 產生假名單，檢查上百人時的版面（只在 dev 生效）
 if (import.meta.env.DEV) {

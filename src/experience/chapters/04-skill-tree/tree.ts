@@ -93,9 +93,7 @@ export function initSkillTree(root: HTMLElement, s: EngineState) {
   const count = root.querySelector<HTMLElement>('.st-count')!;
   const branchLabels = Array.from(root.querySelectorAll<HTMLElement>('.st-branch'));
   const phrases = Array.from(root.querySelectorAll<HTMLElement>('.st-ph-in'));
-  const textBits = Array.from(
-    root.querySelectorAll<HTMLElement>('.st-kicker, .st-body, .st-status, .st-hint, .st-cta'),
-  );
+  const textBits = Array.from(root.querySelectorAll<HTMLElement>('.st-kicker, .st-body, .st-cta'));
   const total = tree.nodes.length;
 
   const trigger = root.querySelector<HTMLElement>('.st-col-tree')!;

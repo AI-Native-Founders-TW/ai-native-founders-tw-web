@@ -29,9 +29,7 @@ const phrases = (s: string) => s.match(/[^，。、；：！？,.!?]+[，。、�
 // 「辛苦程度：高」→「高」（標籤另外顯示）
 const stripLabel = (v: string, label: string) =>
   v.replace(new RegExp(`^${label}\\s*[:：]\\s*`), '');
-const [statusMain, ...statusRest] = String(t.status)
-  .split('·')
-  .map((s: string) => s.trim());
+const statusMain = String(t.status);
 const rootNode = nodeById.get('root')!;
 ---
 
@@ -56,12 +54,6 @@ const rootNode = nodeById.get('root')!;
           }
         </h2>
         <p class="st-body">{t.body}</p>
-        <p class="st-status">
-          <span class="st-status-dot" aria-hidden="true"></span>
-          <b>{statusMain}</b>
-          {statusRest.length > 0 && <span>{statusRest.join(' · ')}</span>}
-        </p>
-        <p class="st-hint">{t.hint}</p>
         <a class="st-cta" href={links.mono} target="_blank" rel="noopener">
           <span>{t.cta}</span>
           <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 12 12 4M6 4h6v6"></path></svg>
@@ -328,23 +320,6 @@ const rootNode = nodeById.get('root')!;
     font-size: clamp(1rem, 1.1vw, 1.0625rem);
     line-height: 1.85;
   }
-  .st-status {
-    display: inline-flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-top: 1.75rem;
-    padding: 0.5rem 0.85rem;
-    border-radius: 999px;
-    font-size: 0.8125rem;
-    color: var(--color-mist-300);
-    background: rgb(77 71 254 / 0.12);
-    border: 1px dashed rgb(206 171 253 / 0.45);
-  }
-  .st-status b {
-    color: var(--color-lavender-100);
-    font-weight: 600;
-  }
   .st-status-dot {
     width: 0.5rem;
     height: 0.5rem;
@@ -360,11 +335,6 @@ const rootNode = nodeById.get('root')!;
     100% {
       box-shadow: 0 0 0 10px rgb(206 171 253 / 0);
     }
-  }
-  .st-hint {
-    margin-top: 1.25rem;
-    font-size: 0.8125rem;
-    color: var(--color-mist-500);
   }
   .st-cta {
     display: inline-flex;

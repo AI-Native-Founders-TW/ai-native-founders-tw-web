@@ -66,7 +66,6 @@ const ext = 'M5 11 11 5M6 5h5v5';
       <span class="fin__line-label">{f.resultLabel}</span>
       <span class="fin__line-time" data-result>00:00.000</span>
       <span class="fin__line-stamp">{f.timerStop}</span>
-      <span class="fin__line-note">{f.resultNote}</span>
     </div>
 
     <div class="fin__cta-row">
@@ -193,13 +192,6 @@ const ext = 'M5 11 11 5M6 5h5v5';
     scale: 0.6;
     transition: opacity 0.4s var(--ease-run) 0.2s, scale 0.7s cubic-bezier(0.34, 1.7, 0.5, 1) 0.2s;
   }
-  .fin__line-note {
-    margin-left: auto;
-    font-family: var(--font-sans);
-    font-size: 14px;
-    color: var(--color-mist-500);
-    transition: color 0.6s;
-  }
   .fin[data-finished] .fin__line-flag {
     opacity: 1;
   }
@@ -212,9 +204,6 @@ const ext = 'M5 11 11 5M6 5h5v5';
   .fin[data-finished] .fin__line-stamp {
     opacity: 1;
     scale: 1;
-  }
-  .fin[data-finished] .fin__line-note {
-    color: var(--color-mist-300);
   }
 
   /* ── 賽道 ─────────────────────────────── */
@@ -543,10 +532,6 @@ const ext = 'M5 11 11 5M6 5h5v5';
   @media (max-width: 899px) {
     .fin__line {
       padding-right: 0;
-    }
-    .fin__line-note {
-      flex-basis: 100%;
-      margin-left: 32px;
     }
     .fin__race {
       --rail-x: 22px;

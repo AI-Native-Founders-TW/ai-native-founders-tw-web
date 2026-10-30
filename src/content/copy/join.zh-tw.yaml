@@ -32,7 +32,7 @@ steps:
 builder:
   kicker: Intro builder · 自介產生器
   title: 照著範本，一欄一欄寫。
-  body: 欄位與 mono 的 Members/README 範本一致。右邊會即時產生 Markdown；寫好後按下按鈕，GitHub 會開啟建立檔案的頁面，由你自己確認並開 PR。
+  body: 這裡協助你起草自介，右邊會即時產生 Markdown。提交前請依 Members/README 與正式申請制度核對最新要求並補齊內容；寫好後按下按鈕，GitHub 會開啟建立檔案的頁面，由你自己確認並開 PR。
   privacy: 產生器只在你的瀏覽器裡執行，不會把內容送到任何地方。草稿只存在這個瀏覽器；按下按鈕時，內容才會帶到 GitHub 的編輯頁，在你提交之前都不會公開。
   groups:
     - id: you
@@ -40,8 +40,8 @@ builder:
     - id: why
       title: 為什麼加入
     - id: rnr
-      title: 你的 R&R
-      note: 提交前就把 R&R 寫好。寫得越具體，之後有人發起活動時越容易找到你；這不代表你答應接下任何指定的工作。
+      title: 可以幫什麼忙、想要幫什麼忙
+      note: 寫下可以幫什麼忙、想要幫什麼忙，方便大家找人協作；這不代表你答應接下任何指定的工作。完整自介與分工要求，請依 Members/README 與正式申請制度辦理。
   fields:
     name:
       label: 名字或慣用稱呼
@@ -100,23 +100,23 @@ faq:
       a: 不算。成員資格以自介 PR 審查通過為準。Discord 是大家交流、參與活動與找人協作的地方，我們會邀請你，但它不是門檻；Star 與活動留言也一樣，依意願參與。
       refs: [application]
     - q: 加入後一定要幫忙嗎？
-      a: 不用。所有成員都是志工，組織不強制任何人承擔工作。成員應有基本的參與度、不要全程潛水，具體標準還在討論。自介裡的 R&R 是你的意願，不是承諾。
+      a: 不用。所有成員都是志工，組織不強制任何人承擔工作。基本參與度與分工安排依正式成員參與制度辦理；自介寫下可以幫什麼忙、想要幫什麼忙，不代表答應接下任何指定的工作。
       refs: [constitution, participation]
     - q: 加入要收費嗎？
       a: 不用。加入的唯一門檻是提交自介 PR。我們也不在筆記或活動中收錢置入、不為任何公司推銷。
       refs: [application, constitution]
     - q: 我不會用 GitHub 怎麼辦？
-      a: 照 Members/README 的步驟就可以：登入 GitHub、Fork、在 Members/ 新增自介、開 PR。也可以用上面的自介產生器，它會直接帶你到 GitHub 建立檔案的頁面。卡住了，就到 Discord 發問。
+      a: 請依 Members/README 的最新步驟與提交位置建立自介、開 PR。也可以用上面的自介產生器起草，再依正式要求核對與補齊。卡住了，就到 Discord 發問。
       refs: [membersGuide, discord]
     - q: 審查多久？誰審？
-      a: 老實說：尚未決定。審查人、審查程序與權限安排都還在討論，所以我們不承諾處理時間。PR 送出就是提出申請；如果需要補充，你會在 PR 上看到審查意見。
-      refs: [review]
+      a: 審查人、程序與權限安排依正式申請制度辦理，本頁不承諾處理時間。PR 送出就是提出申請；如果需要補充，你會在 PR 上看到審查意見。
+      refs: [application, review]
   refLabels:
     constitution: 憲法
     application: 申請制度
     membersGuide: Members/README
     participation: 成員參與制度
-    review: 自介審查（TODO）
+    review: 自介審查
     discord: Discord
 
 event:

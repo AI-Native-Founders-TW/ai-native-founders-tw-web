@@ -8,7 +8,7 @@ interface Props {
 }
 const { copy } = Astro.props;
 const c = copy.character;
-const classes: { id: string; name: string; line: string }[] = c.classes;
+const classes: { id: string; label?: string; name: string; line: string }[] = c.classes;
 const pad = (n: number) => String(n).padStart(2, '0');
 ---
 
@@ -56,7 +56,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
     </div>
 
     <div class="ch05-roster-wrap">
-      <p class="ch05-backdrop" aria-hidden="true" data-ch05-backdrop>{classes[0]?.id}</p>
+      <p class="ch05-backdrop" aria-hidden="true" data-ch05-backdrop>{classes[0]?.label ?? classes[0]?.id}</p>
       <canvas class="ch05-sparks" data-ch05-sparks aria-hidden="true"></canvas>
       <div class="ch05-roster container-run" role="group" aria-labelledby="ch05-prompt" data-ch05-roster>
         {
@@ -66,6 +66,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
               class="ch05-card"
               data-index={i}
               data-id={k.id}
+              data-label={k.label ?? k.id}
               aria-pressed={i === 0 ? 'true' : 'false'}
               aria-controls="ch05-dialog"
             >
@@ -74,7 +75,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
               </span>
               <span class="ch05-card-inner">
                 <span class="ch05-card-num" aria-hidden="true">{pad(i + 1)}</span>
-                <span class="ch05-card-id" aria-hidden="true">{k.id}</span>
+                <span class="ch05-card-id" aria-hidden="true">{k.label ?? k.id}</span>
                 <span class="ch05-emblem" aria-hidden="true">
                   <svg class="ch05-ring" viewBox="0 0 200 200" fill="none">
                     <circle cx="100" cy="100" r="92" stroke="currentColor" stroke-width="1" stroke-dasharray="2 6" />

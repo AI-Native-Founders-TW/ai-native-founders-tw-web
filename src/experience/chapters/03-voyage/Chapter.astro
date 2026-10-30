@@ -176,7 +176,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
       </div>
 
       <nav class="vy-rail" aria-label={v.railLabel ?? v.kicker}>
-        <span class="vy-rail-end" aria-hidden="true">{originCode}</span>
+        <span class="vy-rail-end" aria-hidden="true">{v.railOrigin ?? originCode}</span>
         <div class="vy-rail-track">
           <div class="vy-rail-fill" aria-hidden="true"></div>
           <div class="vy-rail-head" aria-hidden="true"></div>
@@ -189,11 +189,11 @@ const pad = (n: number) => String(n).padStart(2, '0');
             ))
           }
         </div>
-        <span class="vy-rail-end" aria-hidden="true">{destCode}</span>
+        <span class="vy-rail-end" aria-hidden="true">{v.goal ?? destCode}</span>
       </nav>
 
       <div class="vy-arrive">
-        <p class="vy-dest" aria-hidden="true"><b>{destCode}</b><span>{destName}</span></p>
+        <p class="vy-dest" aria-hidden="true"><b class="vy-goal">{v.goal ?? destCode}</b></p>
         <p class="vy-foot">{v.footnote}</p>
       </div>
     </div>
@@ -783,6 +783,14 @@ const pad = (n: number) => String(n).padStart(2, '0');
     letter-spacing: -0.04em;
     color: var(--color-snow-50);
     text-shadow: 0 6px 40px rgb(14 45 166 / 0.55);
+  }
+  .vy-dest b.vy-goal {
+    font-size: clamp(1.6rem, 4vw, 4rem);
+    white-space: normal;
+  }
+  .vy-rail-end {
+    max-width: 9em;
+    white-space: normal;
   }
   .vy-dest span {
     font-weight: 700;

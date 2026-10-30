@@ -7,7 +7,7 @@ meta:
   description: One set of notes to level up every founder in Taiwan. A non-profit, open-source community collecting hard-won founder experience and turning it into open notes.
   skip: Skip the run — take me to join
   # Header
-  shortName: AI-Native Founders TW
+  shortName: AI-Native Global Founders Speedrun Taiwan
   home: Back to home
   join: Join
   langLabel: Switch language
@@ -52,6 +52,9 @@ hero:
   open: Non-profit · Open source · Beginners welcome
 
 coffeeChat:
+  arrowLabel: Help
+  topics: null
+  file: notes/coffee-chat.md
   kicker: Split 02 · Once is enough
   title: Nobody should have to answer the same question a hundred times.
   body: Every new founder starts networking from scratch and runs the same round of coffee chats, and the people who've been there answer the same questions again and again. We turn each conversation into open notes, so one chat helps a hundred founders.
@@ -68,28 +71,31 @@ coffeeChat:
   stat: 1 conversation → N founders
 
 voyage:
-  kicker: Split 03 · Going global
-  title: Taipei to San Francisco.
-  body: Getting to Silicon Valley takes resources — and without them, it's hard to build a global perspective in the first place. We want to map every checkpoint on that route, together.
-  origin: TPE · Taipei
-  destination: SFO · San Francisco
+  kicker: Going global
+  title: From Taiwan, grow in Silicon Valley.
+  body: Build traction, plan your funding, develop connections, and relocate. Together, we share practical experience so founders can understand their stage and decide what to focus on next.
+  origin: Taiwan · Starting out
+  destination: Silicon Valley · Growing
+  railOrigin: Taiwan
+  goal: Grow in Silicon Valley
   checkpoints:
-    - name: Incorporation
-      detail: What does it take in Taiwan, and in the US? How much capital do you declare?
-    - name: Funding plan
-      detail: Get the costs right up front, so you're not distracted halfway through.
-    - name: Network
-      detail: A handshake isn't a relationship. Introductions come from people who actually know you.
-    - name: Culture fit
-      detail: Small talk and cultural distance take practice — better with people practising alongside you.
-  footnote: We don't promise introductions or matchmaking. What we do is turn each conversation into open notes.
-  railLabel: Checkpoints on the route
+    - name: Traction
+      detail: Validate demand through customer usage, payments, and retention.
+    - name: Funding Plan
+      detail: Define your next milestone, the funding it needs, and how long that funding will last.
+    - name: Connections
+      detail: Build lasting relationships with customers, founders, and investors.
+    - name: Relocation
+      detail: Arrange life and work, adapt to the culture, and keep building your business locally.
+  footnote: Share practical experience and turn it into open-source Agent Skills. Connections and funding planning can develop in parallel; we do not promise introductions or matchmaking.
+  railLabel: Stages of building abroad
 
 skillTree:
   kicker: Split 04 · Builds
   title: There's no single way to build a company. There are builds.
   body: Like a game guide — different founder-market fit, team composition and industry lead to different fastest routes. We want to turn hard numbers and lived experience into a skill tree.
-  status: Work in progress · Example nodes — help us map them
+  status: Work in progress
+  sample: Example
   branches:
     - id: fmf
       name: Founder-Market Fit
@@ -148,36 +154,32 @@ character:
     selected: Your starting point
 
 aiNative:
-  kicker: Split 06 · AI-Native
-  title: AI in the product. AI-native in how we build it.
-  body: Everyone's intro says what they can help with and what they want to help with. When you want to start something, ask an AI and find people who might want to build it with you.
-  prompt: Who can help me build a landing page?
-  disclaimer: "Demo: matches public data inside your browser; no external AI is called. Finding someone doesn't mean they've agreed — it's always their call."
-  points:
-    - Specs, plans and intros all live in one open-source repo
-    - Every contribution gets credit
-    - Everything is published as llms.txt, so your AI can read it too
-  terminal:
-    title: anf-agent
-    path: ~/mono/Members
-    badge: Local demo
-    reading: Reading public intros and team assignments
-    count: "{n} people"
-    keywords: Keywords
-    thinking: Matching
-    found: Found {n} people who might fit
-    none: Nobody in the public data mentions this yet. Put what you want to start in your intro so others can find you.
-    fields:
-      roles: Team assignment
-      canHelp: Can help with
-      wantHelp: Wants to help with
-    inputLabel: Try another question
-    placeholder: e.g. Who designs logos?
-    submit: Match
-    suggestions:
-      - Who can help me build a landing page?
-      - Who designs logos?
-      - Who can help write copy?
+  # 翻譯：依 zh-tw 的 aiNative 翻成英文，尚未經拍板
+  kicker: Why AI-Native?
+  title: Exploring AI-Native together, so Taiwan keeps producing founders who build for the world.
+  body: Artificial general intelligence (AGI) may be about to arrive. For Taiwanese people who want to build globally, now is the time to explore AI together and raise what we can actually do. From the organization itself, to the product itself, to product design and development, we explore how AI-Native can unlock what founders are capable of.
+  layers:
+    - name: The organization itself
+      body: This organization itself collaborates with heavy use of shared context and AI-Native ways of running and building. As you take part in it, you're welcome to learn with us how AI-Native can help an organization decentralize to a degree. That lets everyone propose their own plans and contributions at any time, keeping specs, plans and knowledge in a shared mono repo and shared context, so AI can help everyone run the organization more efficiently.
+      link: GitHub · mono
+      tags:
+        hub: Shared context
+        items: [Specs, Plans, Knowledge]
+    - name: The product itself
+      body: We encourage everyone to build AI-Native products, creating Agent as a Service in every field, reaching outstanding results with AI, and building together products that can compete globally.
+      tags:
+        items: [Every field, Agent as a Service, Product]
+    - name: Product design and development
+      body: Learning together how to work the AI-Native way, from market research, product design, pitch decks and funding plans to spec-driven development, so founding teams know the full AI-Native approach to designing and building products. Using AI to amplify how we organize information, unlocking a hundredfold of human potential, and using that methodology to leapfrog.
+      tags:
+        items: [Market research, Product design, Pitch deck, Funding plan, Spec-driven development]
+  weave: Explore together. Practice together.
+  close:
+    title: Let Taiwan keep producing AI-Native founders.
+    body: Through ongoing exchange and shared practice, we want to raise how well Taiwanese founders use AI, so more of them are ready to compete abroad, and to advance practice across Taiwan's AI industry. We hope to deliver outstanding results from the bottom up, so the government sees what Taiwanese startups can do, and that in turn shapes its international strategy.
+    outcomes:
+      - Raise competitiveness abroad
+      - Advance practice across Taiwan's AI industry
 
 notDo:
   kicker: Split 07 · What we don't do
@@ -202,7 +204,7 @@ finish:
       detail: The founder's letter, the constitution and the application process — what we're doing, the principles we share, and how to join.
       link: founderWords
     - name: Submit your intro as a PR
-      detail: Who you are, why you're joining, what you hope to get, what you can share, and your R&R. Once it's approved, you're a member.
+      detail: Who you are, why you're joining, what you hope to get, what you can share, and what you can and want to help with. Once it's approved, you're a member.
       link: membersGuide
   timerStop: RUN STARTED
   start: START
@@ -210,7 +212,6 @@ finish:
   checkpoint: CP
   stepCta: Open
   resultLabel: Your time
-  resultNote: The clock stops here. From now on, no rush.
   ctaPrimary: Submit your intro
   ctaSecondary: Join Discord
   event:
@@ -225,7 +226,6 @@ credits:
   title: Credits
   subtitle: Everyone's work deserves to be seen.
   sections:
-    website: Website
     org: Organization document contributors
     community: Community
   thanks: Thanks for playing.

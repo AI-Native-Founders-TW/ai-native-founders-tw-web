@@ -214,7 +214,7 @@ export function initCharacter() {
       current = next;
       if (reduced) {
         const backdrop = root?.querySelector<HTMLElement>('[data-ch05-backdrop]');
-        if (backdrop) backdrop.textContent = card.dataset.id ?? '';
+        if (backdrop) backdrop.textContent = card.dataset.label ?? card.dataset.id ?? '';
       }
       cards.forEach((c, k) => {
         c.setAttribute('aria-pressed', String(k === next));
@@ -237,7 +237,7 @@ export function initCharacter() {
             .timeline()
             .to(backdrop, { xPercent: -6, opacity: 0, duration: 0.22, ease: 'power2.in' })
             .add(() => {
-              backdrop.textContent = card.dataset.id ?? '';
+              backdrop.textContent = card.dataset.label ?? card.dataset.id ?? '';
             })
             .fromTo(
               backdrop,

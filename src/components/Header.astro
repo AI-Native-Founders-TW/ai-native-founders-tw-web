@@ -1,5 +1,5 @@
 ---
-// Header：左 Logo＋短名；右 中／EN、Join。捲動後收合成玻璃膠囊。
+// Header：左 Logo＋全名；右 中／EN、Join。捲動後收合成玻璃膠囊。
 import { getCopy, getLocale, localePath } from '../i18n/copy';
 
 const locale = getLocale(Astro.currentLocale);
@@ -81,10 +81,12 @@ const arrow = 'M3 8h10M9 4l4 4-4 4';
     align-items: center;
     gap: 12px;
     min-height: 44px;
+    min-width: 0;
     color: var(--color-snow-50);
     text-decoration: none;
   }
   .hdr__logo {
+    flex-shrink: 0;
     width: 34px;
     height: 34px;
     border-radius: 50%;
@@ -99,9 +101,9 @@ const arrow = 'M3 8h10M9 4l4 4-4 4';
     font-size: 14.5px;
     font-weight: 600;
     letter-spacing: -0.005em;
-    white-space: nowrap;
+    white-space: normal;
     overflow: hidden;
-    max-width: 16em;
+    max-width: 32em;
     transition: max-width 0.7s var(--ease-run), opacity 0.5s var(--ease-run);
   }
   :global(html.header-condensed) .hdr__name {
@@ -110,6 +112,7 @@ const arrow = 'M3 8h10M9 4l4 4-4 4';
   }
 
   .hdr__right {
+    flex-shrink: 0;
     display: flex;
     align-items: center;
     gap: 10px;

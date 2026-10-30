@@ -30,7 +30,7 @@ steps:
 builder:
   kicker: Intro builder
   title: Follow the template, one field at a time.
-  body: The fields mirror the Members/README template in the mono repo. Markdown updates live on the right. When you're ready, the button opens GitHub's new-file page; you review it and open the PR yourself.
+  body: Use this tool to draft your introduction. Before submitting, check Members/README and the official application policy for current requirements and complete any missing information. Markdown updates live on the right. When you're ready, the button opens GitHub's new-file page; you review it and open the PR yourself.
   privacy: The builder runs only in your browser and sends nothing anywhere. Your draft stays in this browser. Nothing is public until you submit it on GitHub.
   groups:
     - id: you
@@ -38,8 +38,8 @@ builder:
     - id: why
       title: Why you're here
     - id: rnr
-      title: Your R&R
-      note: Your R&R (roles and responsibilities) has to be clear before you submit; it can't be filled in later. The clearer it is, the easier it is for anyone organizing something to find people via AI. It is not a promise to take on any specific work.
+      title: What you can and want to help with
+      note: Describe what you can and want to help with so others can find collaborators. This does not commit you to specific work. Follow Members/README and the official application policy for the full introduction and responsibility requirements.
   fields:
     name:
       label: Name, or what people call you
@@ -104,23 +104,23 @@ faq:
       a: No. Membership comes from an approved intro PR. Discord is where people talk, join events and find collaborators; you'll be invited, but it isn't a requirement. Same for starring the repo or posting in the event thread.
       refs: [application]
     - q: Do I have to help out once I'm in?
-      a: No. Everyone is a volunteer and nobody is assigned work. Members are expected to take part at a basic level rather than lurk forever; what that means exactly is still being discussed. The R&R in your intro is what you're open to, not a commitment.
+      a: No. Everyone is a volunteer, and nobody is forced to take on work. Participation and responsibility arrangements follow the official member participation policy. Describing what you can and want to help with does not commit you to specific work.
       refs: [constitution, participation]
     - q: Does it cost anything to join?
       a: No. The only step to join is a self-intro PR. There are no paid placements in notes or events, and we never promote anyone's company.
       refs: [application, constitution]
     - q: I've never used GitHub. Now what?
-      a: Follow Members/README — sign in, fork, add your intro under Members/, open a PR. Or use the builder above; it takes you straight to GitHub's new-file page. Stuck? Ask in Discord.
+      a: Follow Members/README for the current submission steps and location. You can draft with the builder above, then check and complete the official requirements. Stuck? Ask in Discord.
       refs: [membersGuide, discord]
     - q: How long does review take, and who reviews?
-      a: Honestly, that hasn't been decided. Reviewers, process and permissions are still being worked out, so we won't promise a turnaround. Opening the PR is your application; if anything needs adding, you'll see review comments on the PR.
-      refs: [review]
+      a: Reviewers, process and permissions follow the official application policy. This page does not promise a turnaround. Opening the PR is your application; if anything needs adding, you'll see review comments on the PR.
+      refs: [application, review]
   refLabels:
     constitution: Constitution
     application: Application process
     membersGuide: Members/README
     participation: Member participation
-    review: Intro review (TODO)
+    review: Intro review
     discord: Discord
 
 event:
